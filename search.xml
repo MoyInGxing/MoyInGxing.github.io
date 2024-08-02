@@ -84,7 +84,7 @@
 <p><img src="/../../public/img/image-20240803000332150-17226163592833.png" alt="image-20240803000332150"></p>
 </li>
 <li><p>action和goto的表格获得</p>
-<p><img src="/../../public/img/image-20240803000701647-17226163557042.png" alt="image-20240803000701647"></p>
+<p><img src="/img/mypic/com/image-20240803000701647-17226163557042.png" alt="image-20240803000701647"></p>
 </li>
 <li><p>需要注意的地方</p>
 <blockquote>
@@ -92,8 +92,8 @@
 <p>2.若出现冲突说明grammar定义的不好</p>
 </blockquote>
 <p>如此例子：则出现了reduce和shift冲突和reduce和reduce冲突，注意有的并非冲突，可以一个状态多次操作</p>
-<p><img src="/../../public/img/image-20240803000826163-17226162670141.png" alt="image-20240803000826163"></p>
-<p><img src="/../../mypic/com/image-20240803001104451-17226181592731.png" alt="image-20240803001104451"></p>
+<p><img src="/img/mypic/com/image-20240803000826163-17226162670141.png" alt="image-20240803000826163"></p>
+<p><img src="/img/mypic/com/com/image-20240803001104451-17226181592731.png" alt="image-20240803001104451"></p>
 </li>
 </ul>
 ]]></content>
