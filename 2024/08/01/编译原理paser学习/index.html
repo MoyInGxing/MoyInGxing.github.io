@@ -95,9 +95,9 @@
 <p>一个为：shift和reduce的冲突，可被precedence and associativity declaration修复，类似于leftmost 或者rightmost，如加法和乘法的优先级。</p>
 <p>另一个： reduce-reduce conflict，不知道该选择哪一个规则，说明： There is ambiguity in the grammar ，Might be fixed by additional lookahead，这个类似于两个规则冲突</p>
 <h3 id="3-When-to-shift-reduce"><a href="#3-When-to-shift-reduce" class="headerlink" title="3.When to shift&#x2F;reduce?"></a>3.When to shift&#x2F;reduce?</h3><p>接着讲什么时候解决冲突，主要引入了prefix and handle</p>
-<p>![](img&#x2F;mypic&#x2F;com&#x2F;屏幕截图 2024-08-02 193651-17226163759036.png)</p>
+<p>![屏幕截图 2024-08-02 193651-17226163759036](img&#x2F;mypic&#x2F;com&#x2F;屏幕截图 2024-08-02 193651-17226163759036.png)</p>
 <p>然后将了语法规范（specific）和parser的关系，核心在这张图：基本观点是，规范越简单解析器越简单，解析器无法准确识别所用的上下文无关语法（CFG），解析器的实现也需要效率和功能的trade-off</p>
-<p>![](img&#x2F;mypic&#x2F;com&#x2F;屏幕截图 2024-08-02 193848-17226163733105.png)</p>
+<p>![屏幕截图 2024-08-02 193848-17226163733105](img&#x2F;mypic&#x2F;com&#x2F;屏幕截图 2024-08-02 193848-17226163733105.png)</p>
 <h3 id="3-When-to-shift-reduce-realize"><a href="#3-When-to-shift-reduce-realize" class="headerlink" title="3.When to shift&#x2F;reduce?realize"></a>3.When to shift&#x2F;reduce?realize</h3><h4 id="algorithm-1（LR0）"><a href="#algorithm-1（LR0）" class="headerlink" title="algorithm 1（LR0）"></a>algorithm 1（LR0）</h4><blockquote>
 <p>关键在于构造action和goto两张表格</p>
 <p>构造上述两张表格需要知道Configuration set</p>
@@ -110,13 +110,13 @@
 </li>
 <li><p>closure的构造</p>
 <p>把所有的非终结符递归的转换即可</p>
-<p>![](img&#x2F;mypic&#x2F;com&#x2F;屏幕截图 2024-08-03 000108-17226163667684.png)</p>
+<p>![屏幕截图 2024-08-03 000108-17226163667684](img&#x2F;mypic&#x2F;com&#x2F;屏幕截图 2024-08-03 000108-17226163667684.png)</p>
 </li>
 <li><p>Successor(I, X)的构造</p>
 <blockquote>
 <p>类似于状态转移后的状态的构造，状态转移需要移动圆点</p>
 </blockquote>
-<p><img src="/img/mypic/com/img/image-20240803000246178.png" alt="image-20240803000246178"></p>
+<p><img src="/img/mypic/com/image-20240803000246178.png" alt="image-20240803000246178"></p>
 </li>
 <li><p>configuration set的构造</p>
 <p><img src="/img/mypic/com/image-20240803000332150-17226163592833.png" alt="image-20240803000332150"></p>
