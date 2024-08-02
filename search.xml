@@ -58,4 +58,70 @@
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
   </entry>
+  <entry>
+    <title>关于parser的语法树生成算法（实现）</title>
+    <url>/2024/08/01/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86paser%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[<h2 id="Week-5-and-Week-6"><a href="#Week-5-and-Week-6" class="headerlink" title="Week 5 and Week 6"></a>Week 5 and Week 6</h2><blockquote>
+<p>首先是提出算法实现前的一些铺垫，主要包括以下知识：</p>
+<p>1.Top-Down and Bottom-Up</p>
+<p>2.Shift-Reduce Parsing</p>
+<p>3.一些notation为了算法实现做铺垫</p>
+</blockquote>
+<h3 id="1-Top-Down-and-Bottom-Up"><a href="#1-Top-Down-and-Bottom-Up" class="headerlink" title="1.Top-Down and Bottom-Up"></a>1.Top-Down and Bottom-Up</h3><p>Top-Down对应先前讲的leftmost，而Bottom-Up则对应先前讲的rightmost，Week 4是从易于理解的角度讲解，而本周则是从实现的角度讲解。主要涉及到了如何shift，如何reduce，以及如何生成树，但是没有讲什么时候。</p>
+<h3 id="2-Shift-Reduce-Parsing"><a href="#2-Shift-Reduce-Parsing" class="headerlink" title="2.Shift-Reduce Parsing"></a>2.Shift-Reduce Parsing</h3><p>基于Top-Down and Bottom-Up引出的语法解析实现的简单模型，初步引入了一些notation，如</p>
+<p>![屏幕截图 2024-08-02 192717](..&#x2F;..&#x2F;mypic&#x2F;com&#x2F;屏幕截图 2024-08-02 192717-17226163867168.png)</p>
+<p>主要解决了在哪reduce的问题![屏幕截图 2024-08-02 192952](..&#x2F;..&#x2F;mypic&#x2F;com&#x2F;屏幕截图 2024-08-02 192952-17226163831407.png)</p>
+<p>期间讲了一个插曲，也就是冲突（conflict）的解决方法：</p>
+<p>一个为：shift和reduce的冲突，可被precedence and associativity declaration修复，类似于leftmost 或者rightmost，如加法和乘法的优先级。</p>
+<p>另一个： reduce-reduce conflict，不知道该选择哪一个规则，说明： There is ambiguity in the grammar ，Might be fixed by additional lookahead，这个类似于两个规则冲突</p>
+<h3 id="3-When-to-shift-reduce"><a href="#3-When-to-shift-reduce" class="headerlink" title="3.When to shift&#x2F;reduce?"></a>3.When to shift&#x2F;reduce?</h3><p>接着讲什么时候解决冲突，主要引入了prefix and handle</p>
+<p>![](..&#x2F;..&#x2F;mypic&#x2F;com&#x2F;屏幕截图 2024-08-02 193651-17226163759036.png)</p>
+<p>然后将了语法规范（specific）和parser的关系，核心在这张图：基本观点是，规范越简单解析器越简单，解析器无法准确识别所用的上下文无关语法（CFG），解析器的实现也需要效率和功能的trade-off</p>
+<p>![](..&#x2F;..&#x2F;mypic&#x2F;com&#x2F;屏幕截图 2024-08-02 193848-17226163733105.png)</p>
+<h3 id="3-When-to-shift-reduce-realize"><a href="#3-When-to-shift-reduce-realize" class="headerlink" title="3.When to shift&#x2F;reduce?realize"></a>3.When to shift&#x2F;reduce?realize</h3><h4 id="algorithm-1（LR0）"><a href="#algorithm-1（LR0）" class="headerlink" title="algorithm 1（LR0）"></a>algorithm 1（LR0）</h4><blockquote>
+<p>关键在于构造action和goto两张表格</p>
+<p>构造上述两张表格需要知道Configuration set</p>
+<p>构造configuration set需要知道如何计算Closure property</p>
+</blockquote>
+<ul>
+<li><p>action和goto表格的状态转移可看下表：</p>
+<p>只需要注意一点的就是其状态转移只和stack头的元素有关，当弹出元素之后的状态转移也是如此</p>
+<p>![屏幕截图 2024-08-02 235730](..&#x2F;..&#x2F;mypic&#x2F;com&#x2F;屏幕截图 2024-08-02 235730.png)</p>
+</li>
+<li><p>closure的构造</p>
+<p>把所有的非终结符递归的转换即可</p>
+<p>![](..&#x2F;..&#x2F;mypic&#x2F;com&#x2F;屏幕截图 2024-08-03 000108-17226163667684.png)</p>
+</li>
+<li><p>Successor(I, X)的构造</p>
+<blockquote>
+<p>类似于状态转移后的状态的构造，状态转移需要移动圆点</p>
+</blockquote>
+<p><img src="/../../mypic/com/image-20240803000246178.png" alt="image-20240803000246178"></p>
+</li>
+<li><p>configuration set的构造</p>
+<p><img src="/../../mypic/com/image-20240803000332150-17226163592833.png" alt="image-20240803000332150"></p>
+</li>
+<li><p>action和goto的表格获得</p>
+<p><img src="/../../mypic/com/image-20240803000701647-17226163557042.png" alt="image-20240803000701647"></p>
+</li>
+<li><p>需要注意的地方</p>
+<blockquote>
+<p>1.状态不要重复，状态也不能少</p>
+<p>2.若出现冲突说明grammar定义的不好</p>
+</blockquote>
+<p>如此例子：则出现了reduce和shift冲突和reduce和reduce冲突，注意有的并非冲突，可以一个状态多次操作</p>
+<p><img src="/../../mypic/com/image-20240803000826163-17226162670141.png" alt="image-20240803000826163"></p>
+<p><img src="/../../mypic/com/image-20240803001104451.png" alt="image-20240803001104451"></p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>cs</category>
+        <category>compiler</category>
+      </categories>
+      <tags>
+        <tag>cs</tag>
+        <tag>compiler</tag>
+      </tags>
+  </entry>
 </search>
