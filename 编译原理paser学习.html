@@ -52,3 +52,19 @@
 <p><img src="/img/mypic/com/image-20240803001104451.png" alt="image-20240803001104451"></p>
 </li>
 </ul>
+<h4 id="algorithm-2（SLR1）"><a href="#algorithm-2（SLR1）" class="headerlink" title="algorithm 2（SLR1）"></a>algorithm 2（SLR1）</h4><blockquote>
+<p>关键在于知道first（X）和follow（X）的定义，进而shift操作和reduce操作以及reduce-reduce的conflict都可以从follow（X）的定义解决，当然也有语法不满足的情况。</p>
+<p>总结就是通过可以观察即将输入的terminal来判断是否执行push操作，或者直接执行reduce操作，因此称为SLR1，然后再根据执行操作后入栈的元素来实现状态转移，也就是说在入栈的那一刻状态也转移了，栈顶存储的就是此时的state</p>
+<p>需注意一次状态一次操作，即state-&gt;action-&gt;new_state(根据action后的栈顶元素决定)</p>
+</blockquote>
+<ul>
+<li><p>例子：在reduce阶段可以认为是（pop+push）然后进入新状态。</p>
+<p><img src="/img/mypic/com/image-20240803224138802.png" alt="image-20240803224138802"></p>
+</li>
+</ul>
+<h4 id="algorithm-3（SLR）"><a href="#algorithm-3（SLR）" class="headerlink" title="algorithm 3（SLR）"></a>algorithm 3（SLR）</h4><blockquote>
+<p>讲看follow来构造configuration set改为根据看lookahead，更加细粒化，其他没有什么不一样的</p>
+</blockquote>
+<h3 id="5-优先级precedence"><a href="#5-优先级precedence" class="headerlink" title="5.优先级precedence"></a>5.优先级precedence</h3><blockquote>
+<p>不是通过更改语法来实现，而是给算法增加额外规则，也就是人为增加何时reduce or shift，以减少此类冲突情形。</p>
+</blockquote>
