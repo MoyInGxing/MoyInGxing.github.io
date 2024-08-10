@@ -256,4 +256,37 @@
         <tag>compiler</tag>
       </tags>
   </entry>
+  <entry>
+    <title>关于tcache的一些基础概述</title>
+    <url>/2024/08/10/%E5%85%B3%E4%BA%8Etcache%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8E%A2%E7%B4%A2/</url>
+    <content><![CDATA[<h1 id="tcache相关结构体"><a href="#tcache相关结构体" class="headerlink" title="tcache相关结构体"></a>tcache相关结构体</h1><h2 id="tcache-perthread-struct"><a href="#tcache-perthread-struct" class="headerlink" title="tcache_perthread_struct"></a>tcache_perthread_struct</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">tcache_perthread_struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="type">uint16_t</span> counts[TCACHE_MAX_BINS];<span class="comment">//数量统计</span></span><br><span class="line">  tcache_entry *entries[TCACHE_MAX_BINS];<span class="comment">//指针数组</span></span><br><span class="line">&#125; tcache_perthread_struct;</span><br></pre></td></tr></table></figure>
+
+<p>此结构体为每个线程一个的tcache的管理器，管理级别上类似于arena。详情看源码，此结构体会在调用malloc的时候初始化。初始值全0。</p>
+<h2 id="tcache-entry"><a href="#tcache-entry" class="headerlink" title="tcache_entry"></a>tcache_entry</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">tcache_entry</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">tcache_entry</span> *<span class="title">next</span>;</span></span><br><span class="line">  <span class="comment">/* This field exists to detect double frees.  */</span></span><br><span class="line">  <span class="type">uintptr_t</span> key;</span><br><span class="line">&#125; tcache_entry;</span><br></pre></td></tr></table></figure>
+
+<p>此结构体为tcache的chunk，和一般的chunk比不会记录size字段，也许是不安全的隐患。但是会记录key字段，类似于canary（猜的）。entries数组记录了链表中最后一个chunk的地址，也就是说entries就是所谓的bin。</p>
+<h1 id="关于PROTECT-PTR-pos-ptr-和REVEAL-PTR-ptr-宏定义"><a href="#关于PROTECT-PTR-pos-ptr-和REVEAL-PTR-ptr-宏定义" class="headerlink" title="关于PROTECT_PTR(pos, ptr)和REVEAL_PTR(ptr)宏定义"></a>关于PROTECT_PTR(pos, ptr)和REVEAL_PTR(ptr)宏定义</h1><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> PROTECT_PTR(pos, ptr) \</span></span><br><span class="line"><span class="meta">  ((__typeof (ptr)) ((((size_t) pos) &gt;&gt; 12) ^ ((size_t) ptr)))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> REVEAL_PTR(ptr)  PROTECT_PTR (&amp;ptr, ptr)</span></span><br></pre></td></tr></table></figure>
+
+<p>此宏定义会对bin链表中的指针进行混淆操作，具体方式就是低版本的指针的值与指针存储的位置&gt;&gt;12进行异或操作。若要恢复，就用结果值亦或指针存储的位置&gt;&gt;12即可，可得到正常的值。# tcache相关结构体</p>
+<h1 id="tcache相关操作"><a href="#tcache相关操作" class="headerlink" title="tcache相关操作"></a>tcache相关操作</h1><blockquote>
+<p>主要涉及到tcache_put和tcache_get，逻辑比较简单，不细说了</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* Caller must ensure that we know tc_idx is valid and there&#x27;s room</span></span><br><span class="line"><span class="comment">   for more chunks.  */</span></span><br><span class="line"><span class="type">static</span> __always_inline <span class="type">void</span></span><br><span class="line"><span class="title function_">tcache_put</span> <span class="params">(mchunkptr chunk, <span class="type">size_t</span> tc_idx)</span></span><br><span class="line">&#123;</span><br><span class="line">  tcache_entry *e = (tcache_entry *) chunk2mem (chunk);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Mark this chunk as &quot;in the tcache&quot; so the test in _int_free will</span></span><br><span class="line"><span class="comment">     detect a double free.  */</span></span><br><span class="line">  e-&gt;key = tcache_key;</span><br><span class="line"></span><br><span class="line">  e-&gt;next = PROTECT_PTR (&amp;e-&gt;next, tcache-&gt;entries[tc_idx]);</span><br><span class="line">  tcache-&gt;entries[tc_idx] = e;</span><br><span class="line">  ++(tcache-&gt;counts[tc_idx]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Caller must ensure that we know tc_idx is valid and there&#x27;s</span></span><br><span class="line"><span class="comment">   available chunks to remove.  */</span></span><br><span class="line"><span class="type">static</span> __always_inline <span class="type">void</span> *</span><br><span class="line"><span class="title function_">tcache_get</span> <span class="params">(<span class="type">size_t</span> tc_idx)</span></span><br><span class="line">&#123;</span><br><span class="line">  tcache_entry *e = tcache-&gt;entries[tc_idx];</span><br><span class="line">  <span class="keyword">if</span> (__glibc_unlikely (!aligned_OK (e)))</span><br><span class="line">    malloc_printerr (<span class="string">&quot;malloc(): unaligned tcache chunk detected&quot;</span>);</span><br><span class="line">  tcache-&gt;entries[tc_idx] = REVEAL_PTR (e-&gt;next);</span><br><span class="line">  --(tcache-&gt;counts[tc_idx]);</span><br><span class="line">  e-&gt;key = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">return</span> (<span class="type">void</span> *) e;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>ctf</category>
+        <category>pwn</category>
+        <category>heap利用</category>
+      </categories>
+      <tags>
+        <tag>pwn</tag>
+        <tag>heap</tag>
+        <tag>ctf</tag>
+      </tags>
+  </entry>
 </search>
