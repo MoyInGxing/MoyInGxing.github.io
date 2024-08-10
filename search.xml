@@ -1,37 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>gcc天问之路</title>
-    <url>/2024/08/09/gcc%E5%A4%A9%E9%97%AE%E4%B9%8B%E8%B7%AF/</url>
-    <content><![CDATA[<h1 id="gcc链接器"><a href="#gcc链接器" class="headerlink" title="gcc链接器"></a>gcc链接器</h1><h2 id="探坑之路"><a href="#探坑之路" class="headerlink" title="探坑之路"></a>探坑之路</h2><p>因为要为malloc的漏洞利用写demo，需要不同版本的共享库，之前一直再逃避写demo这件事，一直用的可执行文件，利用patchelf来更改链接器路径，但是为了深入学习还是得自己写demo，需要掌握编译链接的全过程。</p>
-<p>一定要记住GUN不止GCC，gcc的时候也不是仅仅用gcc，遵从stfm的原则，想深入了解一下汇编链接的全过程去查看了一下gcc的文档，好无知，哈哈哈，明明更改动态链接库的版本需要的是ld，为什么要看gcc的文档呢，还是因为-Wl选项救了我，一看解释居然是给链接器传递参数。哈哈哈。接着赶快去看linker的文档，主要用上了这两个选项：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">--rpath=...</span><br><span class="line">--dynamic-linker=....</span><br></pre></td></tr></table></figure>
-
-<p>–rpath选项按文档上说是链接时查找的共享对象，但是我对这个共享库也知道甚少，因此对于其也仅仅会用的状态。</p>
-<p>–dynamic-linker选项按文档的解释是更改linker的可执行文件，彻底激发了我的好奇心，原来linker可以被直接使用的，一直以为是个库，哈哈哈哈，无知的我。然后就去查了ld的文件类型。结果：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">l@L:/usr/bin$ file ld</span><br><span class="line">ld: symbolic link to x86_64-linux-gnu-ld</span><br><span class="line">l@L:/usr/bin$ file x86_64-linux-gnu-ld</span><br><span class="line">x86_64-linux-gnu-ld: symbolic link to x86_64-linux-gnu-ld.bfd</span><br><span class="line">l@L:/usr/bin$ file x86_64-linux-gnu-ld.bfd</span><br><span class="line">x86_64-linux-gnu-ld.bfd: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=c93d251e4e665bc9768ef05ba3086b166e95ec2b, for GNU/Linux 3.2.0, stripped</span><br><span class="line">l@L:/usr/bin$ file /lib64/ld-linux-x86-64.so.2</span><br><span class="line">/lib64/ld-linux-x86-64.so.2: symbolic link to /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2</span><br><span class="line">l@L:/usr/bin$ file /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2</span><br><span class="line">/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2: ELF 64-bit LSB shared object, x86-64, version 1 (GNU/Linux), dynamically linked, BuildID[sha1]=4186944c50f8a32b47d74931e3f512b811813b64, stripped</span><br></pre></td></tr></table></figure>
-
-<p>盲菜ld这个东西是一个封装后的可以被人使用的程序，但是本质来看还是ld-linux-x86-64.so.2，调用其会出现：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">l@L:/usr/bin$ /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 --help</span><br><span class="line">Usage: /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 [OPTION]... EXECUTABLE-FILE [ARGS-FOR-PROGRAM...]</span><br><span class="line">You have invoked &#x27;ld.so&#x27;, the program interpreter for dynamically-linked</span><br><span class="line">ELF programs.  Usually, the program interpreter is invoked automatically</span><br><span class="line">when a dynamically-linked executable is started.</span><br><span class="line"></span><br><span class="line">You may invoke the program interpreter program directly from the command</span><br><span class="line">line to load and run an ELF executable file; this is like executing that</span><br><span class="line">file itself, but always uses the program interpreter you invoked,</span><br><span class="line">instead of the program interpreter specified in the executable file you</span><br><span class="line">run.  Invoking the program interpreter directly provides access to</span><br><span class="line">additional diagnostics, and changing the dynamic linker behavior without</span><br><span class="line">setting environment variables (which would be inherited by subprocesses).</span><br></pre></td></tr></table></figure>
-
-<p>坑越来越深，哈哈哈。</p>
-<p>不过还是先记录下更改链接器的选项，不然又得查了：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">gcc top_chunk_demo1.c -Wl,--rpath=/home/l/how2heap/glibc-all-in-one/libs/2.23-0ubuntu3_amd64 -Wl,--dynamic-linker=/home/l/how2heap/glibc-all-in-one/libs/2.23-0ubuntu3_amd64/ld-2.23.so</span><br></pre></td></tr></table></figure>
-
-<h2 id="无端猜测"><a href="#无端猜测" class="headerlink" title="无端猜测"></a>无端猜测</h2><p>本来挖出来的坑很多，要不就趁此机会把elf文件类型和编译过程真正搞通透，为未来的逆向打好基础，因为最近在学编译原理，一想，我还是把编译原理学完再说吧，效率高一点，编译原理目前是学到了yacc，以我浅薄的知识盲猜一下这个gcc的linker过程，汇编啥的不说了，所谓动态链接我猜测就是类似于python的解释过程，因为我在上述挖坑时看elf段意外发现了interpret这个段，楞一看这玩意跟解释器啥区别，之前一听解释器居然完全没联想起来，我一想动态连接，这玩意不就是在运行时需要啥拿啥吗，这python的解释器也是边解释边运行啊，编译模式的编译器，解释模式的编译器各有优点，这GUN怎么都有啊。。。。。难道时两者有点的结合？？我不知道，等学完编译原理再来补下面的吧，哈哈哈。</p>
-]]></content>
-      <categories>
-        <category>cs</category>
-        <category>杂项</category>
-        <category>gcc|gun</category>
-      </categories>
-      <tags>
-        <tag>cs</tag>
-        <tag>elf</tag>
-        <tag>gcc</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>关于parser的语法树生成算法（实现）</title>
     <url>/2024/08/01/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86paser%E5%AD%A6%E4%B9%A0/</url>
     <content><![CDATA[<h2 id="Week-5-and-Week-6"><a href="#Week-5-and-Week-6" class="headerlink" title="Week 5 and Week 6"></a>Week 5 and Week 6</h2><blockquote>
@@ -218,7 +187,7 @@
 <p>当<code>__malloc_hook</code>和<code>__free_hook</code>中部位null的时候，在执行<code>__libc_free,__libc_malloc</code>会优先执行hook中的函数。</p>
 </blockquote>
 <p>代码可如下：glibc2.27</p>
-<p><img src="/img/mypic/com/image-20240810190242706.png" alt="image-20240810190242706"></p>
+<p><img src="/img/mypic/com/hook.png" alt="hook"></p>
 <p>但是在2.35中hook没有了，也就不存在此利用手法：</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span></span><br><span class="line">__libc_free (<span class="type">void</span> *mem)</span><br><span class="line">&#123;</span><br><span class="line">  mstate ar_ptr;</span><br><span class="line">  mchunkptr p;                          <span class="comment">/* chunk corresponding to mem */</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (mem == <span class="number">0</span>)                              <span class="comment">/* free(0) has no effect */</span></span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Quickly check that the freed pointer matches the tag for the memory.</span></span><br><span class="line"><span class="comment">     This gives a useful double-free detection.  */</span></span><br><span class="line">  <span class="keyword">if</span> (__glibc_unlikely (mtag_enabled))</span><br><span class="line">    *(<span class="keyword">volatile</span> <span class="type">char</span> *)mem;</span><br><span class="line"></span><br><span class="line">  <span class="type">int</span> err = errno;</span><br><span class="line"></span><br><span class="line">  p = mem2chunk (mem);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (chunk_is_mmapped (p))                       <span class="comment">/* release mmapped memory. */</span></span><br></pre></td></tr></table></figure>
 
@@ -254,6 +223,37 @@
         <tag>pwn</tag>
         <tag>heap</tag>
         <tag>ctf</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>gcc天问之路</title>
+    <url>/2024/08/09/gcc%E5%A4%A9%E9%97%AE%E4%B9%8B%E8%B7%AF/</url>
+    <content><![CDATA[<h1 id="gcc链接器"><a href="#gcc链接器" class="headerlink" title="gcc链接器"></a>gcc链接器</h1><h2 id="探坑之路"><a href="#探坑之路" class="headerlink" title="探坑之路"></a>探坑之路</h2><p>因为要为malloc的漏洞利用写demo，需要不同版本的共享库，之前一直再逃避写demo这件事，一直用的可执行文件，利用patchelf来更改链接器路径，但是为了深入学习还是得自己写demo，需要掌握编译链接的全过程。</p>
+<p>一定要记住GUN不止GCC，gcc的时候也不是仅仅用gcc，遵从stfm的原则，想深入了解一下汇编链接的全过程去查看了一下gcc的文档，好无知，哈哈哈，明明更改动态链接库的版本需要的是ld，为什么要看gcc的文档呢，还是因为-Wl选项救了我，一看解释居然是给链接器传递参数。哈哈哈。接着赶快去看linker的文档，主要用上了这两个选项：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">--rpath=...</span><br><span class="line">--dynamic-linker=....</span><br></pre></td></tr></table></figure>
+
+<p>–rpath选项按文档上说是链接时查找的共享对象，但是我对这个共享库也知道甚少，因此对于其也仅仅会用的状态。</p>
+<p>–dynamic-linker选项按文档的解释是更改linker的可执行文件，彻底激发了我的好奇心，原来linker可以被直接使用的，一直以为是个库，哈哈哈哈，无知的我。然后就去查了ld的文件类型。结果：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">l@L:/usr/bin$ file ld</span><br><span class="line">ld: symbolic link to x86_64-linux-gnu-ld</span><br><span class="line">l@L:/usr/bin$ file x86_64-linux-gnu-ld</span><br><span class="line">x86_64-linux-gnu-ld: symbolic link to x86_64-linux-gnu-ld.bfd</span><br><span class="line">l@L:/usr/bin$ file x86_64-linux-gnu-ld.bfd</span><br><span class="line">x86_64-linux-gnu-ld.bfd: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=c93d251e4e665bc9768ef05ba3086b166e95ec2b, for GNU/Linux 3.2.0, stripped</span><br><span class="line">l@L:/usr/bin$ file /lib64/ld-linux-x86-64.so.2</span><br><span class="line">/lib64/ld-linux-x86-64.so.2: symbolic link to /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2</span><br><span class="line">l@L:/usr/bin$ file /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2</span><br><span class="line">/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2: ELF 64-bit LSB shared object, x86-64, version 1 (GNU/Linux), dynamically linked, BuildID[sha1]=4186944c50f8a32b47d74931e3f512b811813b64, stripped</span><br></pre></td></tr></table></figure>
+
+<p>盲菜ld这个东西是一个封装后的可以被人使用的程序，但是本质来看还是ld-linux-x86-64.so.2，调用其会出现：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">l@L:/usr/bin$ /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 --help</span><br><span class="line">Usage: /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 [OPTION]... EXECUTABLE-FILE [ARGS-FOR-PROGRAM...]</span><br><span class="line">You have invoked &#x27;ld.so&#x27;, the program interpreter for dynamically-linked</span><br><span class="line">ELF programs.  Usually, the program interpreter is invoked automatically</span><br><span class="line">when a dynamically-linked executable is started.</span><br><span class="line"></span><br><span class="line">You may invoke the program interpreter program directly from the command</span><br><span class="line">line to load and run an ELF executable file; this is like executing that</span><br><span class="line">file itself, but always uses the program interpreter you invoked,</span><br><span class="line">instead of the program interpreter specified in the executable file you</span><br><span class="line">run.  Invoking the program interpreter directly provides access to</span><br><span class="line">additional diagnostics, and changing the dynamic linker behavior without</span><br><span class="line">setting environment variables (which would be inherited by subprocesses).</span><br></pre></td></tr></table></figure>
+
+<p>坑越来越深，哈哈哈。</p>
+<p>不过还是先记录下更改链接器的选项，不然又得查了：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">gcc top_chunk_demo1.c -Wl,--rpath=/home/l/how2heap/glibc-all-in-one/libs/2.23-0ubuntu3_amd64 -Wl,--dynamic-linker=/home/l/how2heap/glibc-all-in-one/libs/2.23-0ubuntu3_amd64/ld-2.23.so</span><br></pre></td></tr></table></figure>
+
+<h2 id="无端猜测"><a href="#无端猜测" class="headerlink" title="无端猜测"></a>无端猜测</h2><p>本来挖出来的坑很多，要不就趁此机会把elf文件类型和编译过程真正搞通透，为未来的逆向打好基础，因为最近在学编译原理，一想，我还是把编译原理学完再说吧，效率高一点，编译原理目前是学到了yacc，以我浅薄的知识盲猜一下这个gcc的linker过程，汇编啥的不说了，所谓动态链接我猜测就是类似于python的解释过程，因为我在上述挖坑时看elf段意外发现了interpret这个段，楞一看这玩意跟解释器啥区别，之前一听解释器居然完全没联想起来，我一想动态连接，这玩意不就是在运行时需要啥拿啥吗，这python的解释器也是边解释边运行啊，编译模式的编译器，解释模式的编译器各有优点，这GUN怎么都有啊。。。。。难道时两者有点的结合？？我不知道，等学完编译原理再来补下面的吧，哈哈哈。</p>
+]]></content>
+      <categories>
+        <category>cs</category>
+        <category>杂项</category>
+        <category>gcc|gun</category>
+      </categories>
+      <tags>
+        <tag>cs</tag>
+        <tag>elf</tag>
+        <tag>gcc</tag>
       </tags>
   </entry>
 </search>
