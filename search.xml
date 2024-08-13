@@ -1,23 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>fmtstr一些源码学习</title>
-    <url>/2024/08/13/fmtstr/</url>
-    <content><![CDATA[<h2 id="1-printf"><a href="#1-printf" class="headerlink" title="1. printf"></a>1. printf</h2><h3 id="a-printf"><a href="#a-printf" class="headerlink" title="a.__printf"></a>a.__printf</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span></span><br><span class="line">__printf (<span class="type">const</span> <span class="type">char</span> *format, ...)</span><br><span class="line">&#123;</span><br><span class="line">  va_list arg;</span><br><span class="line">  <span class="type">int</span> done;</span><br><span class="line"></span><br><span class="line">  va_start (arg, format);</span><br><span class="line">  done = __vfprintf_internal (<span class="built_in">stdout</span>, format, arg, <span class="number">0</span>);</span><br><span class="line">  va_end (arg);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> done;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">undef</span> _IO_printf</span></span><br><span class="line">ldbl_strong_alias (__printf, <span class="built_in">printf</span>);</span><br><span class="line">ldbl_strong_alias (__printf, _IO_printf);</span><br></pre></td></tr></table></figure>
-
-<h3 id="b-vfprintf-internal"><a href="#b-vfprintf-internal" class="headerlink" title="b.__vfprintf_internal"></a>b.__vfprintf_internal</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>ctf</category>
-        <category>pwn</category>
-        <category>fmtstr</category>
-      </categories>
-      <tags>
-        <tag>pwn</tag>
-        <tag>fmtstr</tag>
-        <tag>ctf</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>gcc天问之路</title>
     <url>/2024/08/09/gcc%E5%A4%A9%E9%97%AE%E4%B9%8B%E8%B7%AF/</url>
     <content><![CDATA[<h1 id="gcc链接器"><a href="#gcc链接器" class="headerlink" title="gcc链接器"></a>gcc链接器</h1><h2 id="探坑之路"><a href="#探坑之路" class="headerlink" title="探坑之路"></a>探坑之路</h2><p>因为要为malloc的漏洞利用写demo，需要不同版本的共享库，之前一直再逃避写demo这件事，一直用的可执行文件，利用patchelf来更改链接器路径，但是为了深入学习还是得自己写demo，需要掌握编译链接的全过程。</p>
@@ -46,6 +29,23 @@
         <tag>cs</tag>
         <tag>elf</tag>
         <tag>gcc</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>fmtstr一些源码学习</title>
+    <url>/2024/08/13/fmtstr/</url>
+    <content><![CDATA[<h2 id="1-printf"><a href="#1-printf" class="headerlink" title="1. printf"></a>1. printf</h2><h3 id="a-printf"><a href="#a-printf" class="headerlink" title="a.__printf"></a>a.__printf</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span></span><br><span class="line">__printf (<span class="type">const</span> <span class="type">char</span> *format, ...)</span><br><span class="line">&#123;</span><br><span class="line">  va_list arg;</span><br><span class="line">  <span class="type">int</span> done;</span><br><span class="line"></span><br><span class="line">  va_start (arg, format);</span><br><span class="line">  done = __vfprintf_internal (<span class="built_in">stdout</span>, format, arg, <span class="number">0</span>);</span><br><span class="line">  va_end (arg);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> done;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">undef</span> _IO_printf</span></span><br><span class="line">ldbl_strong_alias (__printf, <span class="built_in">printf</span>);</span><br><span class="line">ldbl_strong_alias (__printf, _IO_printf);</span><br></pre></td></tr></table></figure>
+
+<h3 id="b-vfprintf-internal"><a href="#b-vfprintf-internal" class="headerlink" title="b.__vfprintf_internal"></a>b.__vfprintf_internal</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>ctf</category>
+        <category>pwn</category>
+        <category>fmtstr</category>
+      </categories>
+      <tags>
+        <tag>pwn</tag>
+        <tag>fmtstr</tag>
+        <tag>ctf</tag>
       </tags>
   </entry>
   <entry>
@@ -236,7 +236,7 @@
       </tags>
   </entry>
   <entry>
-    <title></title>
+    <title>关于_IO_FILE的一些攻击手法</title>
     <url>/2024/08/13/%E5%85%B3%E4%BA%8E-IO-FILE%E7%9A%84%E4%B8%80%E4%BA%9B%E6%94%BB%E5%87%BB%E6%89%8B%E6%B3%95/</url>
     <content><![CDATA[<h1 id="HCTF-2018the-end"><a href="#HCTF-2018the-end" class="headerlink" title="HCTF 2018the_end"></a>HCTF 2018the_end</h1><h2 id="版本"><a href="#版本" class="headerlink" title="版本"></a>版本</h2><p>glibc2.23</p>
 <h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>1.虚表劫持</p>
