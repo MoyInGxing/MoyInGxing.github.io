@@ -1,23 +1,365 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html><html lang="Chinese" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>MoYingXing</title><meta name="author" content="陌影形"><meta name="copyright" content="陌影形"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta property="og:type" content="website">
+<meta property="og:title" content="MoYingXing">
+<meta property="og:url" content="http://example.com/index.html">
+<meta property="og:site_name" content="MoYingXing">
+<meta property="og:locale">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/162703063?s=400&u=7f599e5661244ad7e8490354a9580880dc56acde&v=4">
+<meta property="article:author" content="陌影形">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/162703063?s=400&u=7f599e5661244ad7e8490354a9580880dc56acde&v=4"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Error',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'MoYingXing',
+  isPost: false,
+  isHome: true,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2024-09-11 16:49:46'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
 
-{% block title %}{{ config.title }}{% if theme.index_with_subtitle and config.subtitle %} - {{config.subtitle }}{% endif %}{% endblock %}
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
 
-{% block page_class %}
-  {% if is_home() %}page-home{% endif -%}
-{% endblock %}
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">42</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">19</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">22</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="full_page" id="page-header" style="background-image: url('/img/cov.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="MoYingXing"><img class="site-icon" src="/img/favicon.png"/><span class="site-name">MoYingXing</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="site-info"><h1 id="site-title">MoYingXing</h1><div id="site_social_icons"><a class="social-icon" href="https://github.com/MoyInGxing" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts" id="recent-posts"><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/09/09/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/LLVM%20IR/" title="Untitled">Untitled</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2024-09-09T13:42:25.790Z" title="Created 2024-09-09 21:42:25">2024-09-09</time></span></div><div class="content">llvm ir（初探）本节学习IR（中间表示）（初探）
+扩展：
 
-{% block content %}
-  <section id="posts" class="posts-expand">
-    {% for post in page.posts %}
-      {{ post_template.render(post, true) }}
-    {% endfor %}
-  </section>
 
-  {% include '_partials/pagination.swig' %}
-{% endblock %}
 
-{% block sidebar %}
-  {{ sidebar_template.render(false) }}
-{% endblock %}
+1.形式
+需要知道程序是如何翻译为ir的，但是了解过程之前，需要知道何为ir
+
+
+1.1三地址码
+静态单赋值
+
+1.1.1简单形式（仅顺序且最多调用函数）
+
+
+含义
+
+
+1.1.2 进一步形式
+函数中有分支（为了研究函数中的基本块）
+
+
+
+
+优化之后
+
+
+
+何为基本块：
+只能在入口跳入，或在出口跳出，边用来描述基本块之间的跳转。
+
+
+
+重要指令phi
+
+
+
+1.1.2 加上循环
+
+
+2.实现
+可调用llvm提供的构建指令的api
+
+</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/09/09/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/%E8%AF%AD%E4%B9%89%E5%88%86%E6%9E%90/" title="Untitled">Untitled</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2024-09-09T08:48:07.050Z" title="Created 2024-09-09 16:48:07">2024-09-09</time></span></div><div class="content">语义分析在语法树的基础上，对程序作进一步的检查，来看程序是否是meaningful
+符号检查1.符号表
+保存各种符号相关信息的数据结构
+
+
+
+本节内容涉及教材
+
+
+1.1作用域相关
+嵌套作用域需要嵌套符号表，全局作用域还需放入类型符号以支持类型检查。
+
+
+
+符号表的实现的接口
+
+
+
+所要考虑的
+
+
+2.文法分析（语义）（以类型为例子）（语法制导的定义）
+如何赋予语法树语义，并计算相应的节点的属性？通过赋予每个节点的类型相应属性的相应值来实现，实现过程主要有监听器的模式（遍历两次ast）或者直接写（嵌入到产生式之中，但是只需要遍历一次）
+
+
+
+处理依赖关系，分别有上对下，水平，和下对上。做法：将action嵌入cfg
+
+
+
+
+综合属性。
+
+
+
+继承属性。
+
+
+
+继承与综合属性的综合。主要涉及到数组类型。
+
+
+2.1文法分析（语法制导的翻译方案）（为语法制导的定义的一种实现）
+2小节已给出例子
+
+
+</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/09/09/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/lab1/" title="Untitled">Untitled</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2024-09-09T02:56:21.980Z" title="Created 2024-09-09 10:56:21">2024-09-09</time></span></div><div class="content">一、实验目的二、实验原理三、实验过程lab 1-1
+这个实验使用Lab01-01.exe和Lab01-01.dll文件,的信息。
+
+
+Q1.将文件上传至http://www.VirusTotal.com/进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗?
+成功识别出恶意文件，exe和dll最初识别结果如下：
+
+exe
+
+dll
+
+结果显示超过半数的安全供应商将其识别成恶意软件，基本已经可以判断其为恶意软件了。
+
+VT也识别出了其hash值，string等相关特征，exe和dll分别的结果如下：
+
+exe：
+
+dll：
+
+
+VT也识别出了其pe文件的相关特征，exe和dll分别的结果如下：
+
+exe：
+
+dll：
+
+以上信息均可对其做出是否为恶意文件的初步判断。
+
+Q2.这些文件是什么时候编译的?
+可通过查看pe文件中的struct IMAGE_NT_HEADERS NtHeader 中的IMAGE_FILE_HEADER FileHeader得到答案。exe和dll分别如下图所示（010editor）：
+
+exe：时间戳值为：0x4d0e2fd3（小端法）
+
+网上在线工具转换：可 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/09/08/rust/rust%E5%AE%8F%E6%9C%BA%E5%88%B6/" title="Untitled">Untitled</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2024-09-08T15:57:58.450Z" title="Created 2024-09-08 23:57:58">2024-09-08</time></span></div><div class="content">https://rustmagazine.github.io/rust_magazine_2021/chapter_1/toc.html
+https://zjp-cn.github.io/tlborm/proc-macros/methodical/derive.html
+</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/09/08/rust/rust%E4%B9%8Btrait/" title="Untitled">Untitled</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2024-09-08T15:07:25.530Z" title="Created 2024-09-08 23:07:25">2024-09-08</time></span></div><div class="content">前言trait特性是rust中比较重要的，类似于c++中的虚函数特性，但是从对象为主导，变成了以函数为主导，第一感觉rust像是面向函数式编程。
+使用
+可以先定义trait定义一组方法，然后绑定给不同的数据结构，然后可以根据数据结构的不同访问不同的方法,也有c++中类似于动态绑定的概念，但是要比继承简单很多。
+
+示例：
+trait Shape &#123;    fn area(&amp;self) -&gt; f64;&#125;struct Circle &#123;    radius: f64,&#125;struct Square &#123;    side: f64,&#125;impl Shape for Circle &#123;    fn area(&amp;self) -&gt; f64 &#123;        3.14 * self.radius * self.radius    &#125;&#125;impl Shape for Square &#123;    fn area(&amp;self) -&gt; f64 &#123;        se ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/09/06/qemu%E5%AE%9E%E9%AA%8C/riscv%E6%8C%87%E4%BB%A4%E5%AD%A6%E4%B9%A0/" title="Untitled">Untitled</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2024-09-06T12:31:57.040Z" title="Created 2024-09-06 20:31:57">2024-09-06</time></span></div><div class="content">
+https://riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
+
+1.异常中断与陷阱我们使用术语“异常（exception）”来指代在当前RISC-V线程中，与指令运行时相关联的非正常情况。我们使用术语“陷阱（trap）”来指代因RISC-V线程中发生的异常情况而引发的同步控制转移至陷阱处理程序。陷阱处理程序通常在更加特权的环境中执行。
+我们使用术语“中断（interrupt）”来指代一个与当前RISC-V线程异步发生的外部事件。当必须处理的中断发生时，某条指令会被选中接收到中断异常，随后引发陷阱。
+接下来的章节描述了在执行过程中会引发异常的条件。这些条件如何转变为陷阱取决于执行环境，尽管大多数情况下，当发生异常时，系统通常会引发精确陷阱（precise trap）（除了标准浮点扩展中的浮点异常，这种异常不会引发陷阱）。
+就像实验里看到的那样，异常是强制处理的，而中断是可控的，他们都会陷入（trap）处理程序
+2.base integer subset
+3.instruction format
+总体分为四种
+
+
+四种核 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/09/05/algorithm/%E5%9B%BE%E7%9B%B8%E5%85%B3/" title="Untitled">Untitled</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2024-09-05T14:28:39.720Z" title="Created 2024-09-05 22:28:39">2024-09-05</time></span></div><div class="content"></div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/09/05/%E5%AF%86%E7%A0%81%E5%AD%A6/first_class/" title="Untitled">Untitled</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2024-09-04T23:59:56.780Z" title="Created 2024-09-05 07:59:56">2024-09-05</time></span></div><div class="content">古典密码学古典密码体制
+是否可以表示所有的古典密码体制？？？
+加解密需要可逆的特性，因此数论的研究是十分适合密码学的
+
+
+通信信道模型
+古典密码学下的通信模型
+
+
+1.1移位密码
+凯撒密码
+安全？：最多25次即可猜出有意义的明文
+期望：13次
+
+
+1.2代换密码
+增大了穷举空间，为1.1的发展
+可以理解为广义的凯撒密码。
+安全？：26的阶乘，10的26次幂，可以频率分析。一个字符只能映射为另一个，因此只是形式上的变化，但是可以利用自然语言的频率上的漏洞，找除形式之外可以区分开的东西。
+
+
+1.3放射密码
+进一步增大了密钥空间。
+
+
+1.4维吉尼亚密码
+不只是形式上的变换，频率也会变。
+
+
+1.5希尔密码
+加密后的信息更加混乱，但是不同的分组之间是否有联系？
+
+
+1.6置换密码
+希尔密码的特例。
+
+
+1.7 流加密
+去除每一个加密组的联系，为之前的体制的扩展
+密钥流可预测。
+
+
+</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/09/04/pwn%E6%A8%A1%E6%9D%BF/all/" title="Untitled">Untitled</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2024-09-04T14:29:24.810Z" title="Created 2024-09-04 22:29:24">2024-09-04</time></span></div><div class="content">ANYfrom pwn import * from pwncli import *from LibcSearcher import*io = process(&quot;./ttt&quot;)context.terminal = [&quot;tmux&quot;,&quot;splitw&quot;,&quot;-h&quot;]context.log_level = &#x27;debug&#x27;context.arch = &#x27;amd64&#x27;ARROW = &#x27; ============================================&gt; &#x27; s       = lambda data               :io.send(data) sa      = lambda delim,data         :io.sendafter(delim, data)sl      = lambda data               :io.sendline(data)sla     = lambda delim,da ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/09/04/language/rust/" title="Untitled">Untitled</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2024-09-04T05:23:11.150Z" title="Created 2024-09-04 13:23:11">2024-09-04</time></span></div><div class="content">从现在开始进行rust语言的学习。
+1.基础概念
+此部分比较简单，基本上是每个语言都有的概念
+c语言的差异：1.静态类型  2.没有隐式类型转换。
+
+数据类型
+主要分为标量以及复合类型，具体可参考https://kaisery.github.io/trpl-zh-cn/ch03-02-data-types.html
+标量：整型、浮点型、布尔类型和字符类型。
+复合类型：Rust 有两个原生的复合类型：元组（tuple）和数组（array）。
+
+变量
+要搞清楚可变变量和不可变变量（默认），以及常量（c语言是运行时检查的，加上const关键字）
+也要搞清楚什么是变量遮掩。（Shadowing）可以和作用域以及别名来联想对比学习。
+
+函数
+和一般的函数没什么不同，无非就是返回值，名称以及参数，函数的最后一个表达式的值默认为返回值（下面会讲解表达式）
+
+语句以及表达式
+语句（Statements）是执行一些操作但不返回值的指令。 表达式（Expressions）计算并产生一个值.
+{}是比较常见的表达式。
+
+控制流
+无非就是改变程序的原本的执行流程的一些功能，是一种特殊的表达式。
+关于if：在  ...</div></div></div><nav id="pagination"><div class="pagination"><span class="page-number current">1</span><a class="page-number" href="/page/2/#content-inner">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/#content-inner">5</a><a class="extend next" rel="next" href="/page/2/#content-inner"><i class="fas fa-chevron-right fa-fw"></i></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">陌影形</div><div class="author-info__description">MYX</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">42</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">19</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">22</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MoyInGxing"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/MoyInGxing" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/09/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/LLVM%20IR/" title="Untitled">Untitled</a><time datetime="2024-09-09T13:42:25.790Z" title="Created 2024-09-09 21:42:25">2024-09-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/09/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/%E8%AF%AD%E4%B9%89%E5%88%86%E6%9E%90/" title="Untitled">Untitled</a><time datetime="2024-09-09T08:48:07.050Z" title="Created 2024-09-09 16:48:07">2024-09-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/09/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/lab1/" title="Untitled">Untitled</a><time datetime="2024-09-09T02:56:21.980Z" title="Created 2024-09-09 10:56:21">2024-09-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/08/rust/rust%E5%AE%8F%E6%9C%BA%E5%88%B6/" title="Untitled">Untitled</a><time datetime="2024-09-08T15:57:58.450Z" title="Created 2024-09-08 23:57:58">2024-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/08/rust/rust%E4%B9%8Btrait/" title="Untitled">Untitled</a><time datetime="2024-09-08T15:07:25.530Z" title="Created 2024-09-08 23:07:25">2024-09-08</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>Categories</span>
+            <a class="card-more-btn" href="/categories/" title="View More">
+    <i class="fas fa-angle-right"></i></a>
+            </div>
+            <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/cs/"><span class="card-category-list-name">cs</span><span class="card-category-list-count">14</span></a><ul class="card-category-list child"><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/cs/compiler/"><span class="card-category-list-name">compiler</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/cs/os/"><span class="card-category-list-name">os</span><span class="card-category-list-count">2</span></a><ul class="card-category-list child"><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/cs/os/ucore%E5%AE%9E%E9%AA%8C/"><span class="card-category-list-name">ucore实验</span><span class="card-category-list-count">1</span></a></li></ul></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/cs/windows/"><span class="card-category-list-name">windows</span><span class="card-category-list-count">1</span></a><ul class="card-category-list child"><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/cs/windows/%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/"><span class="card-category-list-name">文件结构</span><span class="card-category-list-count">1</span></a></li></ul></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/cs/%E6%9D%82%E9%A1%B9/"><span class="card-category-list-name">杂项</span><span class="card-category-list-count">1</span></a><ul class="card-category-list child"><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/cs/%E6%9D%82%E9%A1%B9/gcc-gun/"><span class="card-category-list-name">gcc|gun</span><span class="card-category-list-count">1</span></a></li></ul></li></ul></li>
+            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>Tags</span></div><div class="card-tag-cloud"><a href="/tags/heap/" style="font-size: 1.21em; color: #999ea4">heap</a> <a href="/tags/fmtstr/" style="font-size: 1.1em; color: #999">fmtstr</a> <a href="/tags/windows/" style="font-size: 1.1em; color: #999">windows</a> <a href="/tags/elf/" style="font-size: 1.44em; color: #99a7ba">elf</a> <a href="/tags/amd64/" style="font-size: 1.21em; color: #999ea4">amd64</a> <a href="/tags/riscv/" style="font-size: 1.1em; color: #999">riscv</a> <a href="/tags/pe/" style="font-size: 1.1em; color: #999">pe</a> <a href="/tags/%E6%B1%87%E7%BC%96/" style="font-size: 1.21em; color: #999ea4">汇编</a> <a href="/tags/cs/" style="font-size: 1.16em; color: #999b9e">cs</a> <a href="/tags/os/" style="font-size: 1.1em; color: #999">os</a> <a href="/tags/linker/" style="font-size: 1.39em; color: #99a4b4">linker</a> <a href="/tags/kernel/" style="font-size: 1.27em; color: #99a0a9">kernel</a> <a href="/tags/%E6%9E%B6%E6%9E%84/" style="font-size: 1.21em; color: #999ea4">架构</a> <a href="/tags/gcc/" style="font-size: 1.44em; color: #99a7ba">gcc</a> <a href="/tags/ctf/" style="font-size: 1.5em; color: #99a9bf">ctf</a> <a href="/tags/IO-FILE/" style="font-size: 1.33em; color: #99a2af">IO_FILE</a> <a href="/tags/poc/" style="font-size: 1.27em; color: #99a0a9">poc</a> <a href="/tags/compiler/" style="font-size: 1.1em; color: #999">compiler</a> <a href="/tags/pwn/" style="font-size: 1.5em; color: #99a9bf">pwn</a></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>Archives</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/09/"><span class="card-archive-list-date">September 2024</span><span class="card-archive-list-count">11</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/08/"><span class="card-archive-list-date">August 2024</span><span class="card-archive-list-count">31</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>Info</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">Article :</div><div class="item-count">42</div></div><div class="webinfo-item"><div class="item-name">UV :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">PV :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Last Update :</div><div class="item-count" id="last-push-date" data-lastPushDate="2024-09-11T08:49:46.361Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/footer.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2024 By 陌影形</div><div class="footer_custom_text">END</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
