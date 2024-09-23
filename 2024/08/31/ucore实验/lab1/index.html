@@ -1,0 +1,417 @@
+<!DOCTYPE html><html lang="Chinese" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>ucore实验1 | MoYingXing</title><meta name="author" content="陌影形"><meta name="copyright" content="陌影形"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本篇文章开始记录一些ucore的学习例程，以nku的2024实验作业为例 myblog：https:&#x2F;&#x2F;moyingxing.github.io&#x2F;  参考链接OpenSBI,bin,ELF · GitBook (mobisys.cc) https:&#x2F;&#x2F;riscv.org&#x2F;wp-content&#x2F;uploads&#x2F;2017&#x2F;05&#x2F;riscv-privileged-v1.10.pdf https:&#x2F;&#x2F;t">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ucore实验1">
+<meta property="og:url" content="http://example.com/2024/08/31/ucore%E5%AE%9E%E9%AA%8C/lab1/index.html">
+<meta property="og:site_name" content="MoYingXing">
+<meta property="og:description" content="本篇文章开始记录一些ucore的学习例程，以nku的2024实验作业为例 myblog：https:&#x2F;&#x2F;moyingxing.github.io&#x2F;  参考链接OpenSBI,bin,ELF · GitBook (mobisys.cc) https:&#x2F;&#x2F;riscv.org&#x2F;wp-content&#x2F;uploads&#x2F;2017&#x2F;05&#x2F;riscv-privileged-v1.10.pdf https:&#x2F;&#x2F;t">
+<meta property="og:locale">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/162703063?s=400&u=7f599e5661244ad7e8490354a9580880dc56acde&v=4">
+<meta property="article:published_time" content="2024-08-31T12:13:31.000Z">
+<meta property="article:modified_time" content="2024-09-23T05:18:28.000Z">
+<meta property="article:author" content="陌影形">
+<meta property="article:tag" content="ucore">
+<meta property="article:tag" content="riscv">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/162703063?s=400&u=7f599e5661244ad7e8490354a9580880dc56acde&v=4"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2024/08/31/ucore%E5%AE%9E%E9%AA%8C/lab1/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Error',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ucore实验1',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-09-23 13:18:28'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">53</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">17</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">17</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/cov.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="MoYingXing"><img class="site-icon" src="/img/favicon.png"/><span class="site-name">MoYingXing</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">ucore实验1</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2024-08-31T12:13:31.000Z" title="Created 2024-08-31 20:13:31">2024-08-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-09-23T05:18:28.000Z" title="Updated 2024-09-23 13:18:28">2024-09-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/ucore/">ucore</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="ucore实验1"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>本篇文章开始记录一些ucore的学习例程，以nku的2024实验作业为例</p>
+<p>myblog：<a target="_blank" rel="noopener" href="https://moyingxing.github.io/">https://moyingxing.github.io/</a></p>
+</blockquote>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="http://www.mobisys.cc/oslab/lab2023/_book/lab0.5/lab0.5_3_1_layout.html">OpenSBI,bin,ELF · GitBook (mobisys.cc)</a></p>
+<p><a target="_blank" rel="noopener" href="https://riscv.org/wp-content/uploads/2017/05/riscv-privileged-v1.10.pdf">https://riscv.org/wp-content/uploads/2017/05/riscv-privileged-v1.10.pdf</a></p>
+<p><a target="_blank" rel="noopener" href="https://tinylab.org/riscv-uefi-part1/">https://tinylab.org/riscv-uefi-part1/</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.mobisys.cc/oslab/lab2023/_book/lab0.5/lab0.5_3_1_layout.html">OpenSBI,bin,ELF · GitBook (mobisys.cc)</a></p>
+<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><p>os：wsl ubuntu22.04</p>
+<p>gcc（交叉编译器手动编译）：13.2.0</p>
+<p>qemu：QEMU emulator version 6.2.0 (Debian 1:6.2+dfsg-2ubuntu6.22)</p>
+<p>代码资源：<a target="_blank" rel="noopener" href="http://www.mobisys.cc/oslab/index.html">OS Labs (mobisys.cc)</a></p>
+<h2 id="前置基础"><a href="#前置基础" class="headerlink" title="前置基础"></a>前置基础</h2><blockquote>
+<p>因为本实验是以riscv-64位基础架构开发的os，因此需要理解此架构提供的一些硬件资源（如寄存器等等）和一些资源管理模式（第一感觉类似于x86架构下的GDT,LDT,IDT之类），因为是os级别的开发，所以只涉及到特权架构。</p>
+</blockquote>
+<h3 id="RISC-V-特权软件栈"><a href="#RISC-V-特权软件栈" class="headerlink" title="RISC-V 特权软件栈"></a>RISC-V 特权软件栈</h3><blockquote>
+<p>描述在 RISC-V 处理器上运行的特权模式下的软件架构、模式和组件。十分的接口化和模块化，这块感觉和amd64相比是比较规范的，amd64基本上没有这么的考虑接口这些个东西。</p>
+</blockquote>
+<p><img src="/img/mypic/ucore/riscv.png" alt="image-20240831162403318"></p>
+<p>本图从总体上描述了riscv上运行的软件的运行模式，任意两层之间的交互全都是通过二进制接口进行的，如中间的图像，os的实现可以调用下一层提供的Supervisor二进制接口来进行实现（这大概能保证os的移植性吧不知道，没体会到过），而SEE则是二进制接口的执行环境，对于os来说这大概就是在装载os之前实现的吧。最后一幅图主要讲的是虚拟机的实现方式，不是本次实验的重点，主要理解中间这副图即可。</p>
+<h3 id="特权等级"><a href="#特权等级" class="headerlink" title="特权等级"></a>特权等级</h3><blockquote>
+<p>接触过内核的都知道，指令是有权限的，比如一个用户级别的指令可以影响os级别的mmu的映射方式，那么一些恶意软件只要控制了一个用户级别的程序则可以控制你的电脑，都没有LPE什么事了，这岂不是乱套了？</p>
+</blockquote>
+<p><img src="/img/mypic/ucore/%E6%9D%83%E9%99%90.png" alt="image-20240831163159340"></p>
+<p>可以看出riscv的架构分别有三种安全模式，分别为U,S,M，安全模式相关的信息存储在CSR寄存器中，因此当cpu进行指令执行时，会先检查CSR寄存器来判断是否有权限来执行此指令。越权访问将导致异常，会陷入异常处理程序。若使用riscv架构，那么硬件方面必须实现M特权，而其他特权是可选的。不同的特权有着不同的指令集扩展，需要深入学习。</p>
+<h2 id="关于qemu在装载os前做的准备"><a href="#关于qemu在装载os前做的准备" class="headerlink" title="关于qemu在装载os前做的准备"></a>关于qemu在装载os前做的准备</h2><blockquote>
+<p>riscv架构下，os的装载基址在物理地址0x80000000（此时未启动mmu），在执行os代码前，会先进行一些硬件环境初始化工作，从上面的介绍可以看出来，下面将一一介绍和学习。</p>
+</blockquote>
+<p>BIOS，UEFI和U-BOOT此三类程序才是一个计算机启动时首先运行的，但是BIOS经过一些列的标准化等等发展成了UEFI，而U-BOOT主要是用于嵌入式系统，经过一些列的初始化装载操作会执行一个叫做bootloader的东西，这个是os的装载的核心部分。可以看出bootloader在运行之前也是做了一些准备的，具体是啥不用关系，对学os没什么阻碍。至于实验文档上说的<code>QEMU模拟的这款riscv处理器的复位地址是0x1000，而不是0x80000000</code>估计也是这个原因吧。而在riscv架构下的bootloader则是OpenSBI。</p>
+<p>关于opensbi的源代码可以通过下述命令来获取<code>git clone https://gitee.com/tinylab/qemu-opensbi.git</code>，在其中找到firmware文件夹，可以通过连接控制脚本来找到程序的入口点为__start,代码比较长就复制一下前几部分：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">_start:</span><br><span class="line">	/* Find preferred boot HART id */</span><br><span class="line">	MOV_3R	s0, a0, s1, a1, s2, a2</span><br><span class="line">	call	fw_boot_hart</span><br><span class="line">	add	a6, a0, zero</span><br><span class="line">	MOV_3R	a0, s0, a1, s1, a2, s2</span><br><span class="line">	li	a7, -1</span><br><span class="line">	beq	a6, a7, _try_lottery</span><br><span class="line">	/* Jump to relocation wait loop if we are not boot hart */</span><br><span class="line">	bne	a0, a6, _wait_relocate_copy_done</span><br><span class="line">_try_lottery:</span><br><span class="line">	/* Jump to relocation wait loop if we don&#x27;t get relocation lottery */</span><br><span class="line">	lla	a6, _relocate_lottery</span><br><span class="line">	li	a7, 1</span><br><span class="line">	amoadd.w a6, a7, (a6)</span><br><span class="line">	bnez	a6, _wait_relocate_copy_done</span><br><span class="line"></span><br><span class="line">	/* Save load address */</span><br><span class="line">	lla	t0, _load_start</span><br><span class="line">	lla	t1, _fw_start</span><br><span class="line">	REG_S	t1, 0(t0)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="调试-研究os装载例程"><a href="#调试-研究os装载例程" class="headerlink" title="调试(研究os装载例程)"></a>调试(研究os装载例程)</h2><blockquote>
+<p>有了上述基础那么就可以开始调试环节了，利用make qemu来编译源代码，make gdb来调试，将makefile中的make qemu更改一下不然会有问题（至少我的有….）</p>
+</blockquote>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line">......................</span><br><span class="line"><span class="meta"><span class="keyword">.PHONY</span>: qemu </span></span><br><span class="line"><span class="section">qemu: <span class="variable">$(UCOREIMG)</span> <span class="variable">$(SWAPIMG)</span> <span class="variable">$(SFSIMG)</span></span></span><br><span class="line"><span class="comment">#	$(V)$(QEMU) -kernel $(UCOREIMG) -nographic</span></span><br><span class="line">	<span class="variable">$(V)</span><span class="variable">$(QEMU)</span> \</span><br><span class="line">		-machine virt \</span><br><span class="line">		-nographic \</span><br><span class="line">		-bios default \</span><br><span class="line">		-S 	\                              <span class="comment">##启动时暂停便于调试</span></span><br><span class="line">		-gdb tcp::12345 \                <span class="comment">## gdb监听端口</span></span><br><span class="line">		-kernel <span class="variable">$(UCOREIMG)</span>                <span class="comment">## 新增</span></span><br><span class="line"><span class="comment">##		-device loader,file=$(UCOREIMG),addr=0x80200000          ## 注释掉此部分</span></span><br><span class="line">.............................</span><br></pre></td></tr></table></figure>
+
+<p>qemu的路径和gdb的一些路径改一下，改成你安装的bin文件中的可执行程序的文件名。gdb我没有安装riscv版本的，直接用的gdb-multiach，可供参考。</p>
+<blockquote>
+<p>可观察到复位地址以及阻塞地址，和上面讲的都是一样的</p>
+</blockquote>
+<p><img src="/img/mypic/ucore/%E9%98%BB%E5%A1%9E.png" alt="image-20240831175014062"></p>
+<p><img src="/img/mypic/ucore/reset.png" alt="image-20240831175046980"></p>
+<h3 id="opensbi"><a href="#opensbi" class="headerlink" title="opensbi"></a>opensbi</h3><blockquote>
+<p>将断点打到0x80000000，然后continue，观察一下opensbi的指令看看是否和先前分析的一样。</p>
+</blockquote>
+<p><img src="/img/mypic/ucore/opensbi.png" alt="image-20240831175528255"></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">_start:</span><br><span class="line">	/* Find preferred boot HART id */</span><br><span class="line">	MOV_3R	s0, a0, s1, a1, s2, a2</span><br><span class="line">	call	fw_boot_hart</span><br><span class="line">	add	a6, a0, zero</span><br><span class="line">	MOV_3R	a0, s0, a1, s1, a2, s2</span><br><span class="line">	li	a7, -1</span><br><span class="line">	beq	a6, a7, _try_lottery</span><br><span class="line">	/* Jump to relocation wait loop if we are not boot hart */</span><br><span class="line">	bne	a0, a6, _wait_relocate_copy_done</span><br></pre></td></tr></table></figure>
+
+<p>tql，确实是一样的，之前分析的没有一点问题。具体函数功能就不做分析了，整个opensbi估计够我学好长时间了，以后有机会的话再学习吧。</p>
+<h3 id="os加载"><a href="#os加载" class="headerlink" title="os加载"></a>os加载</h3><blockquote>
+<p>opensbi就是实现see为os提供sbi的接口，因此opensbi是运作在m态之上的。接下来解释os的加载了，os的入口点也是在链接控制脚本中指定，这是本实验的连接控制脚本所指定的入口点，至于段合并之类的就不展示了，本质就是手动控制一些program segment的合并，精确控制每一个segment的基址，毕竟os之前没有加载器之类的东西，默认链接脚本生成的可执行文件现在的机器是不认识的。接下来就是找入口点地址，利用p指令可以打印出来，这里面还有一个坑，就是此内核的默认make是去掉符号表的，因此手动改一下吧：手动搜索strip，把这个删掉就可以了，gdb也要执行file bin&#x2F;kernel才行，不知道为什么。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/* Simple linker script for the ucore kernel.</span><br><span class="line">   See the GNU ld &#x27;info&#x27; manual (&quot;info ld&quot;) to learn the syntax. */</span><br><span class="line"></span><br><span class="line">OUTPUT_ARCH(riscv)</span><br><span class="line">ENTRY(kern_entry)</span><br><span class="line">...............</span><br></pre></td></tr></table></figure>
+
+<p><img src="/img/mypic/ucore/%E5%85%A5%E5%8F%A3%E7%82%B9.png" alt="image-20240831181055849"></p>
+<p>可以看见入口点就做两件事，调整sp到bootstacktop并加载正真的kernel的初始函数。</p>
+<p><img src="/img/mypic/ucore/image-20240831181457737.png" alt="image-20240831181457737"></p>
+<h3 id="os运行"><a href="#os运行" class="headerlink" title="os运行"></a>os运行</h3><blockquote>
+<p>继续打断点，然后运行，这就是我们实验上写的内核的初始函数喽，调用sbi接口进行打印，然后坠入死循环（最后一条指令），因此qemu就直接变砖了哈哈哈，只能强制关闭shell才行，终端都相应不了了，这也许就是下一次实验实现中断的原因吧。</p>
+</blockquote>
+<p><img src="/img/mypic/ucore/runstart.png" alt="image-20240831182044836"></p>
+<blockquote>
+<p>可以观察一下qemu的执行结果，会打印出咱们想要的</p>
+</blockquote>
+<p><img src="/img/mypic/com/image-20240831182427141.png" alt="image-20240831182427141"></p>
+<blockquote>
+<p>可以看出程序已经跟死了没啥差别了。。。。</p>
+</blockquote>
+<p><img src="/img/mypic/ucore/die.png" alt="image-20240831182501902"></p>
+<h2 id="中断功能加入"><a href="#中断功能加入" class="headerlink" title="中断功能加入"></a>中断功能加入</h2><blockquote>
+<p>在做此实验之前需要一些前置知识</p>
+</blockquote>
+<h3 id="特权指令"><a href="#特权指令" class="headerlink" title="特权指令"></a>特权指令</h3><p>SYSTEM操作码在RISC-V指令集中承担着编码所有特权指令的角色。特权指令是那些只能由具有特权的处理器模式（例如内核模式）执行的指令。这些指令分为两大类：</p>
+<ol>
+<li><strong>原子性读-修改-写CSRs的指令</strong>：这些指令是对控制和状态寄存器（CSRs）进行操作的指令。CSRs是RISC-V处理器中的特殊寄存器，用于存储与处理器的控制和状态相关的信息，例如中断处理、异常状态、性能计数器等。原子性意味着这些指令可以确保在进行读取、修改和写入操作时，不会被其他指令打断，从而保证操作的完整性。</li>
+<li><strong>其他特权指令</strong>：除了操作CSRs的指令，其他特权指令还包括许多与处理器的特权模式相关的操作，例如切换处理器模式、管理虚拟内存、处理异常和中断等。这些指令通常和处理器的管理功能紧密相关。</li>
+</ol>
+<h3 id="CSRs"><a href="#CSRs" class="headerlink" title="CSRs"></a>CSRs</h3><p>RISC-V为CSR预留了一个12位的地址空间，即每个CSR的地址由12位组成。这12位地址中的高4位（csr[11:8]）用于定义CSR的访问权限：</p>
+<ol>
+<li>**csr[11:10]**：这两位用于指示该CSR是可读写还是只读。不同的组合表示不同的读写权限：<ul>
+<li><code>00</code>、<code>01</code>、<code>10</code> 表示该CSR是可读写的。</li>
+<li><code>11</code> 表示该CSR是只读的。</li>
+</ul>
+</li>
+<li>**csr[9:8]**：这两位用于定义最低能够访问该CSR的特权级别。RISC-V有多个特权级别，如用户模式、监督模式和机器模式，csr[9:8]的值决定了哪一个特权级别的代码可以访问这个寄存器。</li>
+</ol>
+<p><img src="/img/mypic/ucore/csrs.png" alt="image-20240831214926417"></p>
+<h3 id="CSR字段规范（filed-specification）"><a href="#CSR字段规范（filed-specification）" class="headerlink" title="CSR字段规范（filed specification）"></a>CSR字段规范（filed specification）</h3><p><strong>WIRI（保留写入忽略，读取忽略值）</strong>：</p>
+<ul>
+<li>这些字段是保留供将来使用的。写入这些字段时，硬件会忽略写入的值，读取时返回的值无意义。此标签主要用于那些在当前没有明确用途的CSR字段，以避免未来使用中的冲突。</li>
+</ul>
+<p><strong>WPRI（保留写入保留值，读取忽略值）</strong>：</p>
+<ul>
+<li>当你写入一个寄存器时，如果该寄存器包含WPRI字段，硬件会保留这些字段的现有值，而忽略你试图写入的新值。这确保了当将来这些字段有实际用途时，它们的值不会因先前的操作而被破坏。</li>
+</ul>
+<p><strong>WRL（写入&#x2F;读取仅合法值）</strong>：</p>
+<ul>
+<li>对这些字段的写入和读取仅支持特定的合法值。如果你写入一个不合法的值，硬件可能不会引发异常，但读取的结果可能是未定义的。通常，硬件会返回最后一个合法值，或根据某些硬件状态位返回其他值。</li>
+</ul>
+<p><strong>WARL（写入任意值，读取合法值）</strong>：</p>
+<ul>
+<li>这些字段允许你写入任何值，但硬件会自动确保读取时返回合法的值。这个机制使得即使软件写入了非标准值，硬件也能保证系统的稳定性和一致性。</li>
+</ul>
+<h3 id="Supervisor-Level-ISA"><a href="#Supervisor-Level-ISA" class="headerlink" title="Supervisor-Level ISA"></a>Supervisor-Level ISA</h3><blockquote>
+<p>因为是操作系统实验，故跳过了m态的部分，其依赖于硬件提供的sbi接口</p>
+</blockquote>
+<h4 id="Supervisor-Status-Register-sstatus"><a href="#Supervisor-Status-Register-sstatus" class="headerlink" title="Supervisor Status Register (sstatus)"></a>Supervisor Status Register (sstatus)</h4><p><img src="/img/mypic/ucore/sstatus.png" alt="image-20240831215741967"><strong>SPP（Supervisor Previous Privilege)</strong>:</p>
+<ul>
+<li><p><strong>位置</strong>: 在 RV32 中位于第 8 位，在 RV64 和 RV128 中位于第 20 位。</p>
+</li>
+<li><p>功能</p>
+<p>: 该位用于指示陷入监督模式之前处理器的特权级别。</p>
+<ul>
+<li>如果陷入（trap）之前处理器是在用户模式（User Mode）下运行，则该位为0。</li>
+<li>如果是在监督模式（Supervisor Mode）下运行，则该位为1。</li>
+</ul>
+</li>
+<li><p><strong>使用场景</strong>: 当使用 <code>SRET</code> 指令从陷阱（trap）返回时，处理器会根据该位决定返回到用户模式或监督模式。</p>
+</li>
+</ul>
+<p><strong>SIE（Supervisor Interrupt Enable）</strong>:</p>
+<ul>
+<li><p><strong>位置</strong>: 在 RV32 中位于第 1 位，在 RV64 和 RV128 中位于第 1 位。</p>
+</li>
+<li><p>功能</p>
+<p>: 该位控制监督模式下的全局中断使能。</p>
+<ul>
+<li>当 SIE 为 1 时，监督模式中断被使能。</li>
+<li>当 SIE 为 0 时，所有监督模式下的中断被禁用。</li>
+</ul>
+</li>
+<li><p><strong>使用场景</strong>: 在处理器需要临时屏蔽中断时，OS 可以清除 SIE 位，以确保中断不会打断关键的代码执行。</p>
+</li>
+</ul>
+<p><strong>SPIE（Supervisor Previous Interrupt Enable）</strong>:</p>
+<ul>
+<li><p><strong>位置</strong>: 在 RV32 中位于第 5 位，在 RV64 和 RV128 中位于第 5 位。</p>
+</li>
+<li><p>功能</p>
+<p>: 该位保存了陷入监督模式前 SIE 位的值。</p>
+<ul>
+<li>当陷阱发生时，SIE 位的值会被保存到 SPIE 中，并且 SIE 位被清除（禁用中断）。</li>
+<li>当执行 <code>SRET</code> 指令返回时，SIE 位将被恢复为 SPIE 的值。</li>
+</ul>
+</li>
+<li><p><strong>使用场景</strong>: 这确保了中断状态在陷入和返回过程中的一致性。</p>
+</li>
+</ul>
+<p><strong>UPIE（User Previous Interrupt Enable）</strong>:</p>
+<ul>
+<li><p><strong>位置</strong>: 在 RV32 中位于第 4 位，在 RV64 和 RV128 中位于第 4 位。</p>
+</li>
+<li><p>功能</p>
+<p>: 该位保存了陷入用户模式前的用户模式中断使能状态。</p>
+<ul>
+<li>类似于 SPIE，当处理器从用户模式陷入监督模式时，UPIE 保存用户模式的中断使能状态。</li>
+<li>当 <code>URET</code> 指令被执行时，UIE 位会被恢复为 UPIE 的值。</li>
+</ul>
+</li>
+<li><p><strong>使用场景</strong>: 用于管理用户模式的中断状态，确保当用户模式任务恢复执行时，其中断状态与陷入前一致。</p>
+</li>
+</ul>
+<p><strong>UIE（User Interrupt Enable）</strong>:</p>
+<ul>
+<li><p><strong>位置</strong>: 在 RV32 中位于第 0 位，在 RV64 和 RV128 中位于第 0 位。</p>
+</li>
+<li><p>功能</p>
+<p>: 该位控制用户模式下的全局中断使能。</p>
+<ul>
+<li>当 UIE 为 1 时，用户模式中断被使能。</li>
+<li>当 UIE 为 0 时，用户模式中断被禁用。</li>
+</ul>
+</li>
+<li><p><strong>使用场景</strong>: 在用户模式任务需要屏蔽中断时，OS 可以操作 UIE 位。</p>
+</li>
+</ul>
+<h4 id="Supervisor-Trap-Vector-Base-Address-Register-stvec"><a href="#Supervisor-Trap-Vector-Base-Address-Register-stvec" class="headerlink" title="Supervisor Trap Vector Base Address Register (stvec)"></a>Supervisor Trap Vector Base Address Register (stvec)</h4><p><img src="/img/mypic/ucore/image-20240831221145005.png" alt="image-20240831221145005"></p>
+<blockquote>
+<p>关于mode</p>
+</blockquote>
+<p><img src="/img/mypic/ucore/image-20240831221210957.png" alt="image-20240831221210957"></p>
+<h4 id="Supervisor-Interrupt-Registers-sip-and-sie"><a href="#Supervisor-Interrupt-Registers-sip-and-sie" class="headerlink" title="Supervisor Interrupt Registers (sip and sie)"></a>Supervisor Interrupt Registers (sip and sie)</h4><blockquote>
+<p>分别代表着中断挂起（pending）和中断使能（enable）是对每种类型中断的精确控制，主要分为这三种：software interrupts, timer interrupts, and external interrupts，软件中断又分为u型和s型</p>
+</blockquote>
+<h4 id="Supervisor-Timers-and-Performance-Counters"><a href="#Supervisor-Timers-and-Performance-Counters" class="headerlink" title="Supervisor Timers and Performance Counters"></a>Supervisor Timers and Performance Counters</h4><blockquote>
+<p><code>scounteren</code> 是一个用于控制用户模式（U-mode）下硬件性能监控计数器（Hardware Performance Monitoring Counters）可用性的寄存器。通过设置或清除 <code>scounteren</code> 寄存器中的各个位，监督模式（S-mode）可以控制用户模式下对特定计数器的访问权限。</p>
+</blockquote>
+<h4 id="Supervisor-Scratch-Register-sscratch"><a href="#Supervisor-Scratch-Register-sscratch" class="headerlink" title="Supervisor Scratch Register (sscratch)"></a>Supervisor Scratch Register (sscratch)</h4><p><code>sscratch</code> 寄存器是一个 XLEN 位的读&#x2F;写寄存器，专门供监督模式（Supervisor Mode）使用。这个寄存器通常用来保存当前硬件线程（hart）在执行用户代码时监督模式的上下文指针。</p>
+<h4 id="典型用途"><a href="#典型用途" class="headerlink" title="典型用途"></a>典型用途</h4><ul>
+<li><strong>存储指针</strong>：<code>sscratch</code> 寄存器通常用于存储一个指向 hart 本地监督模式上下文的指针。当处理器在用户模式下运行时，<code>sscratch</code> 中会保存与监督模式相关的关键信息，比如栈指针或数据结构的地址。</li>
+<li><strong>陷阱处理程序初始化</strong>：在发生陷阱（trap）时，处理器会切换到监督模式，<code>sscratch</code> 寄存器的内容可以与某个用户寄存器的内容交换。这种交换机制允许陷阱处理程序快速获得一个可用的工作寄存器，以便开始处理陷阱。例如，陷阱处理程序可以将 <code>sscratch</code> 的值加载到一个通用寄存器中，以便使用监督模式的栈指针。</li>
+</ul>
+<h4 id="Supervisor-Exception-Program-Counter-sepc"><a href="#Supervisor-Exception-Program-Counter-sepc" class="headerlink" title="Supervisor Exception Program Counter (sepc)"></a>Supervisor Exception Program Counter (sepc)</h4><p><code>sepc</code> 是一个 XLEN 位的读&#x2F;写寄存器，用于存储发生异常时的程序计数器（PC）值。这个寄存器在监督模式（S-mode）下使用，通常用于记录导致异常的指令地址，以便在处理完异常后能够恢复程序执行。</p>
+<h4 id="寄存器结构"><a href="#寄存器结构" class="headerlink" title="寄存器结构"></a>寄存器结构</h4><ul>
+<li><strong>最低位 <code>sepc[0]</code></strong>: 永远为零。这是因为在RISC-V中，指令的对齐要求至少为16位或32位，因此程序计数器的最低一位不可能为1。</li>
+<li><strong>最低两位 <code>sepc[1:0]</code></strong>: 对于不支持16位指令对齐的实现，这两位始终为零。这确保了程序计数器指向的是一个有效的指令地址。</li>
+</ul>
+<h4 id="Supervisor-Cause-Register-scause"><a href="#Supervisor-Cause-Register-scause" class="headerlink" title="Supervisor Cause Register (scause)"></a>Supervisor Cause Register (scause)</h4><blockquote>
+<p> 指示引发中断的原因</p>
+</blockquote>
+<h4 id="Supervisor-Trap-Value-stval-Register"><a href="#Supervisor-Trap-Value-stval-Register" class="headerlink" title="Supervisor Trap Value (stval) Register"></a>Supervisor Trap Value (stval) Register</h4><blockquote>
+<p><strong>stval 寄存器</strong> 是一个 XLEN 位的可读写寄存器（XLEN 是架构的字长，如 32 位或 64 位）。当系统进入 S 模式（Supervisor mode）并处理陷阱（异常）时，<code>stval</code> 会被写入与该异常相关的特定信息，以便帮助软件处理该异常。</p>
+</blockquote>
+<h4 id="Supervisor-Address-Translation-and-Protection-satp-Register"><a href="#Supervisor-Address-Translation-and-Protection-satp-Register" class="headerlink" title="Supervisor Address Translation and Protection (satp) Register"></a>Supervisor Address Translation and Protection (satp) Register</h4><blockquote>
+<p>和地址转换相关</p>
+</blockquote>
+<h2 id="lab相关"><a href="#lab相关" class="headerlink" title="lab相关"></a>lab相关</h2><blockquote>
+<p>知道了部分基础就可以进行试验了，实验基本上处理的是操作系统层级的异常和中断。</p>
+</blockquote>
+<h3 id="1-1初始化"><a href="#1-1初始化" class="headerlink" title="1.1初始化"></a>1.1初始化</h3><blockquote>
+<p>这一部分是初始化那些个异常寄存器，让中断以及异常发生时能挑战到相应的入口点。接下来学习此部分代码</p>
+<p>代码如下：这里有一个问题，那就是在EBREAK之前并没有设置SIE，为什么还是能触发中断。（得到的答案是SIE只能禁止中断，而不能进制异步中断（异常））。</p>
+<p>idt_init(); 用来初始化vector table，也就是设置中断处理的entry，主要改变的是stvec这个寄存器，通过定义在riscv.h中的一个宏来实现。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> write_csr(reg, val) (&#123; \</span></span><br><span class="line"><span class="meta">  <span class="keyword">if</span> (__builtin_constant_p(val) &amp;&amp; (unsigned long)(val) &lt; 32) \</span></span><br><span class="line"><span class="meta">    asm volatile (<span class="string">&quot;csrw &quot;</span> #reg <span class="string">&quot;, %0&quot;</span> :: <span class="string">&quot;i&quot;</span>(val)); \</span></span><br><span class="line"><span class="meta">  <span class="keyword">else</span> \</span></span><br><span class="line"><span class="meta">    asm volatile (<span class="string">&quot;csrw &quot;</span> #reg <span class="string">&quot;, %0&quot;</span> :: <span class="string">&quot;r&quot;</span>(val)); &#125;)</span></span><br></pre></td></tr></table></figure>
+
+<p>本实验中需要时钟中断的触发，这需要了解sie这个寄存器，这个寄存器为os开发提供了细粒度的异常控制，具体可以控制需要触发哪个异常。代码：<code>set_csr(sie, MIP_STIP);</code>具体参照：</p>
+<p>A supervisor-level timer interrupt is pending if the STIP bit in the sip register is set. Supervisorlevel timer interrupts are disabled when the STIE bit in the sie register is clear. An SBI call to the SEE may be used to clear the pending timer interrupt.</p>
+<p>其中interrupt被分为三类，一类为soft，一类为time，一类为extern，为别对应三种细粒度的控制</p>
+<p>最后的初始化是异常使能位的初始化，主要涉及到sstatus这个寄存器，这个寄存器控制所有中断是否能触发，若此位为0那么细粒度的控制无效。</p>
+<p>总结来说中断的触发需要三个条件，先挂起再使能，也要保证全局的可触发性：</p>
+<p>**<code>sip</code>**：相应位为1。</p>
+<p>**<code>sie</code>**：相应位为1。</p>
+<p><strong><code>sstatus</code> 中的 SIE</strong>：相应位为1；</p>
+<p>或者异步中断（异常）（Interrupt为0）可以无条件触发。</p>
+</blockquote>
+<p><img src="/img/mypic/ucore/wRpoXdLnQzwCvsSgtn1GKtUIlIG44=.png" alt="已上传的图片"></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">kern_init</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">    ..................</span><br><span class="line">    idt_init();  <span class="comment">// init interrupt descriptor table</span></span><br><span class="line">    <span class="comment">//void (*invalid_function)() = (void (*)())0x80200003;</span></span><br><span class="line">    <span class="comment">//invalid_function();</span></span><br><span class="line">    __asm__ <span class="title function_">volatile</span> <span class="params">(</span></span><br><span class="line"><span class="params">        <span class="string">&quot;EBREAK\n&quot;</span></span></span><br><span class="line"><span class="params">    )</span>;</span><br><span class="line">    <span class="comment">// rdtime in mbare mode crashes</span></span><br><span class="line">    clock_init();  <span class="comment">// init clock interrupt</span></span><br><span class="line"></span><br><span class="line">    intr_enable();  <span class="comment">// enable irq interrupt</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">        ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-中断逻辑的实现之状态保存与恢复"><a href="#1-2-中断逻辑的实现之状态保存与恢复" class="headerlink" title="1.2 中断逻辑的实现之状态保存与恢复"></a>1.2 中断逻辑的实现之状态保存与恢复</h3><blockquote>
+<p>在第一步的时候已经将地址绑定到了alltraps，<code>write_csr(stvec, &amp;__alltraps);</code>，因此异常处理的实际入口在此，此函数使用汇编实现，定义在trapentry.S中，主要逻辑如下：</p>
+<p>保存通用寄存器的状态和一些csr寄存器的状态以便于异常处理原因查找和执行流的恢复。大多数csr不用手动改变，涉及到特权模式的切换csr也会自动修改，基本上就是记录一下异常发生的位置以及异常发生的原因，最主要的还是状态的保存与切换，这就得了解sscratch的功能了，具体代码如下：</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">```</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### 1.3 中断逻辑的实现之选择性处理</span><br><span class="line"></span><br><span class="line">&gt; 具体什么中断该用什么代码来处理，此程序设计十分巧妙，具体的逻辑在trap函数中，实现并不复杂，但是巧妙在你如何传递异常信息。传递信息的逻辑为将中断信息保存在栈中，并将栈指针传递给trap函数作为第一个参数。那我以后总不能以栈指针交互吧，这太麻烦了，所以就用c语言定义了结构体,这也是一种汇编和c交互的方法吧，如下：</span><br><span class="line">&gt;</span><br><span class="line">&gt; ```c</span><br><span class="line">&gt; struct trapframe &#123;</span><br><span class="line">&gt;     struct pushregs gpr;</span><br><span class="line">&gt;     uintptr_t status;</span><br><span class="line">&gt;     uintptr_t epc;</span><br><span class="line">&gt;     uintptr_t badvaddr;</span><br><span class="line">&gt;     uintptr_t cause;</span><br><span class="line">&gt; &#125;;</span><br><span class="line">&gt; __alltraps:</span><br><span class="line">&gt;     SAVE_ALL</span><br><span class="line">&gt; </span><br><span class="line">&gt;     move  a0, sp</span><br><span class="line">&gt;     jal trap</span><br><span class="line">&gt;     # sp should be the same as before &quot;jal trap&quot;</span><br><span class="line">&gt; </span><br><span class="line">&gt;     .globl __trapret</span><br><span class="line">&gt; __trapret:</span><br><span class="line">&gt;     RESTORE_ALL</span><br><span class="line">&gt;     # return from supervisor call</span><br><span class="line">&gt;     sret</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>那么就可以完美传递中断信息，具体中断处理代码的实现就是简单的了</p>
+</blockquote>
+<h3 id="1-4-中断处理逻辑实现与检测"><a href="#1-4-中断处理逻辑实现与检测" class="headerlink" title="1.4 中断处理逻辑实现与检测"></a>1.4 中断处理逻辑实现与检测</h3></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">陌影形</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2024/08/31/ucore%E5%AE%9E%E9%AA%8C/lab1/">http://example.com/2024/08/31/ucore%E5%AE%9E%E9%AA%8C/lab1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/ucore/">ucore</a><a class="post-meta__tags" href="/tags/riscv/">riscv</a></div><div class="post_share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/09/05/algorithm/%E5%9B%BE%E7%9B%B8%E5%85%B3/" title=""><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">Previous</div><div class="prev_info"></div></div></a></div><div class="next-post pull-right"><a href="/2024/08/31/ucore%E5%AE%9E%E9%AA%8C/riscv%E6%8C%87%E4%BB%A4%E5%AD%A6%E4%B9%A0/" title="riscv指令"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">Next</div><div class="next_info">riscv指令</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2024/08/31/ucore%E5%AE%9E%E9%AA%8C/riscv%E6%8C%87%E4%BB%A4%E5%AD%A6%E4%B9%A0/" title="riscv指令"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-31</div><div class="title">riscv指令</div></div></a></div><div><a href="/2024/08/31/ucore%E5%AE%9E%E9%AA%8C/riscv%E4%B9%8Bmachainelevel%20/" title="riscv之中断"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-31</div><div class="title">riscv之中断</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div id="lv-container" data-id="city" data-uid="MTAyMC82MDAzNi8zNjQ5OQ=="></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">陌影形</div><div class="author-info__description">MYX</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">53</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">17</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">17</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MoyInGxing"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/MoyInGxing" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-number">1.</span> <span class="toc-text">参考链接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="toc-number">2.</span> <span class="toc-text">环境配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E5%9F%BA%E7%A1%80"><span class="toc-number">3.</span> <span class="toc-text">前置基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RISC-V-%E7%89%B9%E6%9D%83%E8%BD%AF%E4%BB%B6%E6%A0%88"><span class="toc-number">3.1.</span> <span class="toc-text">RISC-V 特权软件栈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E6%9D%83%E7%AD%89%E7%BA%A7"><span class="toc-number">3.2.</span> <span class="toc-text">特权等级</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8Eqemu%E5%9C%A8%E8%A3%85%E8%BD%BDos%E5%89%8D%E5%81%9A%E7%9A%84%E5%87%86%E5%A4%87"><span class="toc-number">4.</span> <span class="toc-text">关于qemu在装载os前做的准备</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E8%AF%95-%E7%A0%94%E7%A9%B6os%E8%A3%85%E8%BD%BD%E4%BE%8B%E7%A8%8B"><span class="toc-number">5.</span> <span class="toc-text">调试(研究os装载例程)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#opensbi"><span class="toc-number">5.1.</span> <span class="toc-text">opensbi</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#os%E5%8A%A0%E8%BD%BD"><span class="toc-number">5.2.</span> <span class="toc-text">os加载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#os%E8%BF%90%E8%A1%8C"><span class="toc-number">5.3.</span> <span class="toc-text">os运行</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%AD%E6%96%AD%E5%8A%9F%E8%83%BD%E5%8A%A0%E5%85%A5"><span class="toc-number">6.</span> <span class="toc-text">中断功能加入</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E6%9D%83%E6%8C%87%E4%BB%A4"><span class="toc-number">6.1.</span> <span class="toc-text">特权指令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CSRs"><span class="toc-number">6.2.</span> <span class="toc-text">CSRs</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CSR%E5%AD%97%E6%AE%B5%E8%A7%84%E8%8C%83%EF%BC%88filed-specification%EF%BC%89"><span class="toc-number">6.3.</span> <span class="toc-text">CSR字段规范（filed specification）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Supervisor-Level-ISA"><span class="toc-number">6.4.</span> <span class="toc-text">Supervisor-Level ISA</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Supervisor-Status-Register-sstatus"><span class="toc-number">6.4.1.</span> <span class="toc-text">Supervisor Status Register (sstatus)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Supervisor-Trap-Vector-Base-Address-Register-stvec"><span class="toc-number">6.4.2.</span> <span class="toc-text">Supervisor Trap Vector Base Address Register (stvec)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Supervisor-Interrupt-Registers-sip-and-sie"><span class="toc-number">6.4.3.</span> <span class="toc-text">Supervisor Interrupt Registers (sip and sie)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Supervisor-Timers-and-Performance-Counters"><span class="toc-number">6.4.4.</span> <span class="toc-text">Supervisor Timers and Performance Counters</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Supervisor-Scratch-Register-sscratch"><span class="toc-number">6.4.5.</span> <span class="toc-text">Supervisor Scratch Register (sscratch)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%B8%E5%9E%8B%E7%94%A8%E9%80%94"><span class="toc-number">6.4.6.</span> <span class="toc-text">典型用途</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Supervisor-Exception-Program-Counter-sepc"><span class="toc-number">6.4.7.</span> <span class="toc-text">Supervisor Exception Program Counter (sepc)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%84%E5%AD%98%E5%99%A8%E7%BB%93%E6%9E%84"><span class="toc-number">6.4.8.</span> <span class="toc-text">寄存器结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Supervisor-Cause-Register-scause"><span class="toc-number">6.4.9.</span> <span class="toc-text">Supervisor Cause Register (scause)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Supervisor-Trap-Value-stval-Register"><span class="toc-number">6.4.10.</span> <span class="toc-text">Supervisor Trap Value (stval) Register</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Supervisor-Address-Translation-and-Protection-satp-Register"><span class="toc-number">6.4.11.</span> <span class="toc-text">Supervisor Address Translation and Protection (satp) Register</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#lab%E7%9B%B8%E5%85%B3"><span class="toc-number">7.</span> <span class="toc-text">lab相关</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">7.1.</span> <span class="toc-text">1.1初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E4%B8%AD%E6%96%AD%E9%80%BB%E8%BE%91%E7%9A%84%E5%AE%9E%E7%8E%B0%E4%B9%8B%E7%8A%B6%E6%80%81%E4%BF%9D%E5%AD%98%E4%B8%8E%E6%81%A2%E5%A4%8D"><span class="toc-number">7.2.</span> <span class="toc-text">1.2 中断逻辑的实现之状态保存与恢复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E4%B8%AD%E6%96%AD%E5%A4%84%E7%90%86%E9%80%BB%E8%BE%91%E5%AE%9E%E7%8E%B0%E4%B8%8E%E6%A3%80%E6%B5%8B"><span class="toc-number">7.3.</span> <span class="toc-text">1.4 中断处理逻辑实现与检测</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/22/C++/%E7%B1%BB/" title="C++类机制">C++类机制</a><time datetime="2024-09-22T09:45:08.000Z" title="Created 2024-09-22 17:45:08">2024-09-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/20/linux%E5%86%85%E6%A0%B8/linux5.15%E5%88%86%E6%9E%90/%E5%85%B3%E4%BA%8Epage%E5%88%86%E9%85%8D/" title="linux5.15之page分配">linux5.15之page分配</a><time datetime="2024-09-20T09:45:08.000Z" title="Created 2024-09-20 17:45:08">2024-09-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/19/%E5%AF%86%E7%A0%81%E5%AD%A6/%E4%BF%A1%E6%81%AF%E8%AE%BA/" title="Untitled">Untitled</a><time datetime="2024-09-19T00:40:05.460Z" title="Created 2024-09-19 08:40:05">2024-09-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/17/%E5%AF%86%E7%A0%81%E5%AD%A6/%E5%AE%9E%E6%88%98/" title="密码学实战">密码学实战</a><time datetime="2024-09-17T09:45:08.000Z" title="Created 2024-09-17 17:45:08">2024-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/16/linux%E5%86%85%E6%A0%B8/linux5.15%E5%88%86%E6%9E%90/%E5%85%B3%E4%BA%8Epage/" title="linux5.15之page">linux5.15之page</a><time datetime="2024-09-16T09:45:08.000Z" title="Created 2024-09-16 17:45:08">2024-09-16</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/footer.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2024 By 陌影形</div><div class="footer_custom_text">END</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(()=>{
+  const loadLivere = () => {
+    if (typeof LivereTower === 'object') window.LivereTower.init()
+    else {
+      (function(d, s) {
+          var j, e = d.getElementsByTagName(s)[0];
+          if (typeof LivereTower === 'function') { return; }
+          j = d.createElement(s);
+          j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+          j.async = true;
+          e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    }
+  }
+
+  if ('Livere' === 'Livere' || !false) {
+    if (false) btf.loadComment(document.getElementById('lv-container'), loadLivere)
+    else loadLivere()
+  } else {
+    window.loadOtherComment = loadLivere
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

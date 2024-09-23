@@ -1,0 +1,337 @@
+<!DOCTYPE html><html lang="Chinese" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>内存管理 | MoYingXing</title><meta name="author" content="陌影形"><meta name="copyright" content="陌影形"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="为了研究内核的堆利用，因此需要学习一下内核的内存分配的相关知识 参考链接https:&#x2F;&#x2F;chatgpt.com&#x2F; https:&#x2F;&#x2F;scis.uohyd.ac.in&#x2F;~atulcs&#x2F;COOS&#x2F;Linux-HOWTOs&#x2F;linux%20kernel&#x2F;Understanding%20The%20Linux%20Kernel.pdf https:&#x2F;&#x2F;github.com&#x2F;andylhqiu&#x2F;linux-2">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内存管理">
+<meta property="og:url" content="http://example.com/2024/09/11/linux%E5%86%85%E6%A0%B8/%E5%88%9D%E6%8E%A2/%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/index.html">
+<meta property="og:site_name" content="MoYingXing">
+<meta property="og:description" content="为了研究内核的堆利用，因此需要学习一下内核的内存分配的相关知识 参考链接https:&#x2F;&#x2F;chatgpt.com&#x2F; https:&#x2F;&#x2F;scis.uohyd.ac.in&#x2F;~atulcs&#x2F;COOS&#x2F;Linux-HOWTOs&#x2F;linux%20kernel&#x2F;Understanding%20The%20Linux%20Kernel.pdf https:&#x2F;&#x2F;github.com&#x2F;andylhqiu&#x2F;linux-2">
+<meta property="og:locale">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/162703063?s=400&u=7f599e5661244ad7e8490354a9580880dc56acde&v=4">
+<meta property="article:published_time" content="2024-09-11T09:45:08.000Z">
+<meta property="article:modified_time" content="2024-09-23T05:16:42.000Z">
+<meta property="article:author" content="陌影形">
+<meta property="article:tag" content="linux内核">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/162703063?s=400&u=7f599e5661244ad7e8490354a9580880dc56acde&v=4"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2024/09/11/linux%E5%86%85%E6%A0%B8/%E5%88%9D%E6%8E%A2/%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Error',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '内存管理',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-09-23 13:16:42'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">53</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">17</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">17</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/cov.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="MoYingXing"><img class="site-icon" src="/img/favicon.png"/><span class="site-name">MoYingXing</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">内存管理</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2024-09-11T09:45:08.000Z" title="Created 2024-09-11 17:45:08">2024-09-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-09-23T05:16:42.000Z" title="Updated 2024-09-23 13:16:42">2024-09-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/linux%E5%86%85%E6%A0%B8/">linux内核</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/linux%E5%86%85%E6%A0%B8/%E5%88%9D%E6%8E%A2/">初探</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="内存管理"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>为了研究内核的堆利用，因此需要学习一下内核的内存分配的相关知识</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://chatgpt.com/">https://chatgpt.com/</a></p>
+<p><a target="_blank" rel="noopener" href="https://scis.uohyd.ac.in/~atulcs/COOS/Linux-HOWTOs/linux%20kernel/Understanding%20The%20Linux%20Kernel.pdf">https://scis.uohyd.ac.in/~atulcs/COOS/Linux-HOWTOs/linux%20kernel/Understanding%20The%20Linux%20Kernel.pdf</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/andylhqiu/linux-2.6.10">https://github.com/andylhqiu/linux-2.6.10</a></p>
+<p><a target="_blank" rel="noopener" href="https://s3.shizhz.me/linux-mm/3.2-wu-li-nei-cun/3.2.5-slab-slub-slob#org8b92d2a">https://s3.shizhz.me/linux-mm/3.2-wu-li-nei-cun/3.2.5-slab-slub-slob#org8b92d2a</a></p>
+<p><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v2.6.10/source/include/asm-ia64/mmzone.h">https://elixir.bootlin.com/linux/v2.6.10/source/include/asm-ia64/mmzone.h</a></p>
+<h2 id="1-Page-Frame-Management"><a href="#1-Page-Frame-Management" class="headerlink" title="1.Page Frame Management"></a>1.Page Frame Management</h2><h3 id="1-1-page-frame"><a href="#1-1-page-frame" class="headerlink" title="1.1 page frame"></a>1.1 page frame</h3><blockquote>
+<p>页描述符，通过lru将page连接起来。</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/*/include/linux/mm.h*/</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Each physical page in the system has a struct page associated with</span></span><br><span class="line"><span class="comment"> * it to keep track of whatever it is we are using the page for at the</span></span><br><span class="line"><span class="comment"> * moment. Note that we have no way to track which tasks are using</span></span><br><span class="line"><span class="comment"> * a page.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">page</span> &#123;</span></span><br><span class="line">	<span class="type">page_flags_t</span> flags;		<span class="comment">/* Atomic flags, some possibly</span></span><br><span class="line"><span class="comment">					 * updated asynchronously */</span></span><br><span class="line">	<span class="type">atomic_t</span> _count;		<span class="comment">/* Usage count, see below. */</span></span><br><span class="line">	<span class="type">atomic_t</span> _mapcount;		<span class="comment">/* Count of ptes mapped in mms,</span></span><br><span class="line"><span class="comment">					 * to show when page is mapped</span></span><br><span class="line"><span class="comment">					 * &amp; limit reverse map searches.</span></span><br><span class="line"><span class="comment">					 */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span> private;		<span class="comment">/* Mapping-private opaque data:</span></span><br><span class="line"><span class="comment">					 * usually used for buffer_heads</span></span><br><span class="line"><span class="comment">					 * if PagePrivate set; used for</span></span><br><span class="line"><span class="comment">					 * swp_entry_t if PageSwapCache</span></span><br><span class="line"><span class="comment">					 */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">address_space</span> *<span class="title">mapping</span>;</span>	<span class="comment">/* If low bit clear, points to</span></span><br><span class="line"><span class="comment">					 * inode address_space, or NULL.</span></span><br><span class="line"><span class="comment">					 * If page mapped as anonymous</span></span><br><span class="line"><span class="comment">					 * memory, low bit is set, and</span></span><br><span class="line"><span class="comment">					 * it points to anon_vma object:</span></span><br><span class="line"><span class="comment">					 * see PAGE_MAPPING_ANON below.</span></span><br><span class="line"><span class="comment">					 */</span></span><br><span class="line">	<span class="type">pgoff_t</span> index;			<span class="comment">/* Our offset within mapping. */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">lru</span>;</span>		<span class="comment">/* Pageout list, eg. active_list</span></span><br><span class="line"><span class="comment">					 * protected by zone-&gt;lru_lock !</span></span><br><span class="line"><span class="comment">					 */</span></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * On machines where all RAM is mapped into kernel address space,</span></span><br><span class="line"><span class="comment">	 * we can simply calculate the virtual address. On machines with</span></span><br><span class="line"><span class="comment">	 * highmem some memory is mapped into kernel virtual memory</span></span><br><span class="line"><span class="comment">	 * dynamically, so we need a place to store that address.</span></span><br><span class="line"><span class="comment">	 * Note that this field could be 16 bits on x86 ... ;)</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * Architectures with slow multiplication can define</span></span><br><span class="line"><span class="comment">	 * WANT_PAGE_VIRTUAL in asm/page.h</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined(WANT_PAGE_VIRTUAL)</span></span><br><span class="line">	<span class="type">void</span> *virtual;			<span class="comment">/* Kernel virtual address (NULL if</span></span><br><span class="line"><span class="comment">					   not kmapped, ie. highmem) */</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* WANT_PAGE_VIRTUAL */</span></span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-ARRAY"><a href="#1-2-ARRAY" class="headerlink" title="1.2 ARRAY"></a>1.2 ARRAY</h3><blockquote>
+<p>管理所有的页帧。</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifndef</span> CONFIG_DISCONTIGMEM</span></span><br><span class="line"><span class="comment">/* The array of struct pages - for discontigmem use pgdat-&gt;lmem_map */</span></span><br><span class="line"><span class="keyword">extern</span> <span class="class"><span class="keyword">struct</span> <span class="title">page</span> *<span class="title">mem_map</span>;</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-The-Buddy-System-Algorithm"><a href="#1-3-The-Buddy-System-Algorithm" class="headerlink" title="1.3 The Buddy System Algorithm"></a>1.3 The Buddy System Algorithm</h3><blockquote>
+<p>设计指南：</p>
+<p>作为一种分配连续页帧的算法，需要应对外部碎片，两种解决方法：</p>
+<p>1.利用虚拟地址映射，将连续的虚拟地址映射到不连续的页帧之上</p>
+<p>2.算法本身的高效。（最好使用此方法因为有的操作是忽略mmu映射的（如：DMA））</p>
+<p>但是不能频繁更改页表，因为会使缓冲区频繁刷新（更长的访存时间）。</p>
+<p>算法描述：</p>
+<p>Linux 采用的解决外部碎片问题的技术基于著名的伙伴系统算法。所有空闲的页面框架被分成10个不同大小的块列表，分别包含 1、2、4、8、16、32、64、128、256 和 512 个连续页面框架的块。每个块中第一个页面框架的物理地址是组大小的倍数：例如，一个包含 16 个页面框架的块的初始地址是 16 × 2^12 的倍数。</p>
+<p>算法功能示例：</p>
+<p>假设需要分配128个连续页帧，算法会一个一个查找，若有同样大小的，则分配，否则找更大的然后拆分，若最大的没有，那么会报错。</p>
+<p>页帧合并条件：1.尺寸一样。2.连续。3.地址对齐</p>
+</blockquote>
+<h4 id="1-3-1-数据结构"><a href="#1-3-1-数据结构" class="headerlink" title="1.3.1 数据结构"></a>1.3.1 数据结构</h4><blockquote>
+<p>linux中实现了连个不同的伙伴系统，一个处理DMA的页帧分配，另一个处理其余的。本节将学习伙伴算法依赖的数据结构</p>
+<p><strong><code>mem_map</code> 数组</strong>：这是前面介绍的结构。</p>
+<p><strong>包含 10 个 <code>free_area_struct</code> 类型元素的数组</strong>，每个组大小都有一个元素。<code>free_area[0]</code> 指向由伙伴系统管理的页框数组，这些页框不适合 ISA DMA 操作，而 <code>free_area[1]</code> 指向适合 ISA DMA 的页框数组。</p>
+<p><strong>十个二进制位图数组</strong>，每个组大小一个位图。每个伙伴系统都有自己的一组位图，通过这些位图来跟踪块是否被分配。</p>
+<p>每个free_area[0] and free_area[1] 指向的数组的元素都是free_area_struct类型的。</p>
+</blockquote>
+<p><img src="/img/mypic/linux/%E4%BC%99%E4%BC%B4.png" alt="image-20240911191314680"></p>
+<blockquote>
+<p>2.6.10中结构体不太一样，定义在：&#x2F;include&#x2F;linux&#x2F;mmzone.h文件中，每一个上述图片代表一个zone，<code>free_area[0]</code>等演变成个不同的zone。</p>
+</blockquote>
+<h5 id="ZONE"><a href="#ZONE" class="headerlink" title="ZONE"></a>ZONE</h5><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> ZONE_DMA		0</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ZONE_NORMAL		1</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ZONE_HIGHMEM		2</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">zone</span> &#123;</span></span><br><span class="line">	<span class="comment">/* Fields commonly accessed by the page allocator */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		free_pages;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		pages_min, pages_low, pages_high;</span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * protection[] is a pre-calculated number of extra pages that must be</span></span><br><span class="line"><span class="comment">	 * available in a zone in order for __alloc_pages() to allocate memory</span></span><br><span class="line"><span class="comment">	 * from the zone. i.e., for a GFP_KERNEL alloc of &quot;order&quot; there must</span></span><br><span class="line"><span class="comment">	 * be &quot;(1&lt;&lt;order) + protection[ZONE_NORMAL]&quot; free pages in the zone</span></span><br><span class="line"><span class="comment">	 * for us to choose to allocate the page from that zone.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * It uses both min_free_kbytes and sysctl_lower_zone_protection.</span></span><br><span class="line"><span class="comment">	 * The protection values are recalculated if either of these values</span></span><br><span class="line"><span class="comment">	 * change.  The array elements are in zonelist order:</span></span><br><span class="line"><span class="comment">	 *	[0] == GFP_DMA, [1] == GFP_KERNEL, [2] == GFP_HIGHMEM.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		protection[MAX_NR_ZONES];</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">per_cpu_pageset</span>	<span class="title">pageset</span>[<span class="title">NR_CPUS</span>];</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * free areas of different sizes</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="type">spinlock_t</span>		lock;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">free_area</span>	<span class="title">free_area</span>[<span class="title">MAX_ORDER</span>];</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	ZONE_PADDING(_pad1_)</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Fields commonly accessed by the page reclaim scanner */</span></span><br><span class="line">	<span class="type">spinlock_t</span>		lru_lock;	</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>	<span class="title">active_list</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>	<span class="title">inactive_list</span>;</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		nr_scan_active;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		nr_scan_inactive;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		nr_active;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		nr_inactive;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		pages_scanned;	   <span class="comment">/* since last reclaim */</span></span><br><span class="line">	<span class="type">int</span>			all_unreclaimable; <span class="comment">/* All pages pinned */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * prev_priority holds the scanning priority for this zone.  It is</span></span><br><span class="line"><span class="comment">	 * defined as the scanning priority at which we achieved our reclaim</span></span><br><span class="line"><span class="comment">	 * target at the previous try_to_free_pages() or balance_pgdat()</span></span><br><span class="line"><span class="comment">	 * invokation.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * We use prev_priority as a measure of how much stress page reclaim is</span></span><br><span class="line"><span class="comment">	 * under - it drives the swappiness decision: whether to unmap mapped</span></span><br><span class="line"><span class="comment">	 * pages.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * temp_priority is used to remember the scanning priority at which</span></span><br><span class="line"><span class="comment">	 * this zone was successfully refilled to free_pages == pages_high.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * Access to both these fields is quite racy even on uniprocessor.  But</span></span><br><span class="line"><span class="comment">	 * it is expected to average out OK.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="type">int</span> temp_priority;</span><br><span class="line">	<span class="type">int</span> prev_priority;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	ZONE_PADDING(_pad2_)</span><br><span class="line">	<span class="comment">/* Rarely used or read-mostly fields */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * wait_table		-- the array holding the hash table</span></span><br><span class="line"><span class="comment">	 * wait_table_size	-- the size of the hash table array</span></span><br><span class="line"><span class="comment">	 * wait_table_bits	-- wait_table_size == (1 &lt;&lt; wait_table_bits)</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * The purpose of all these is to keep track of the people</span></span><br><span class="line"><span class="comment">	 * waiting for a page to become available and make them</span></span><br><span class="line"><span class="comment">	 * runnable again when possible. The trouble is that this</span></span><br><span class="line"><span class="comment">	 * consumes a lot of space, especially when so few things</span></span><br><span class="line"><span class="comment">	 * wait on pages at a given time. So instead of using</span></span><br><span class="line"><span class="comment">	 * per-page waitqueues, we use a waitqueue hash table.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * The bucket discipline is to sleep on the same queue when</span></span><br><span class="line"><span class="comment">	 * colliding and wake all in that wait queue when removing.</span></span><br><span class="line"><span class="comment">	 * When something wakes, it must check to be sure its page is</span></span><br><span class="line"><span class="comment">	 * truly available, a la thundering herd. The cost of a</span></span><br><span class="line"><span class="comment">	 * collision is great, but given the expected load of the</span></span><br><span class="line"><span class="comment">	 * table, they should be so rare as to be outweighed by the</span></span><br><span class="line"><span class="comment">	 * benefits from the saved space.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * __wait_on_page_locked() and unlock_page() in mm/filemap.c, are the</span></span><br><span class="line"><span class="comment">	 * primary users of these fields, and in mm/page_alloc.c</span></span><br><span class="line"><span class="comment">	 * free_area_init_core() performs the initialization of them.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="type">wait_queue_head_t</span>	* wait_table;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		wait_table_size;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		wait_table_bits;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * Discontig memory support fields.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">pglist_data</span>	*<span class="title">zone_pgdat</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">page</span>		*<span class="title">zone_mem_map</span>;</span></span><br><span class="line">	<span class="comment">/* zone_start_pfn == zone_start_paddr &gt;&gt; PAGE_SHIFT */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		zone_start_pfn;</span><br><span class="line"></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		spanned_pages;	<span class="comment">/* total size, including holes */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		present_pages;	<span class="comment">/* amount of memory (excluding holes) */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * rarely used fields:</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="type">char</span>			*name;</span><br><span class="line">&#125; ____cacheline_maxaligned_in_smp;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h5 id="free-area"><a href="#free-area" class="headerlink" title="free_area"></a>free_area</h5><blockquote>
+<p>第一次看有点奇怪，这链表怎么只存储指针，那么该如何定位数据？</p>
+<p>其定位数据是通过一个宏，可以获得一个结构体中的其他元素，那么链表的操作就只用操作节点了，非常高效。</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">free_area</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>	<span class="title">free_list</span>;</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		*<span class="built_in">map</span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> *<span class="title">next</span>, *<span class="title">prev</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-3-2-算法实现"><a href="#1-3-2-算法实现" class="headerlink" title="1.3.2 算法实现"></a>1.3.2 算法实现</h4><blockquote>
+<p>在理解了一些数据结构基础之后，可以学习一下算法。</p>
+<p>集中在 <code>mm/page_alloc.c</code> 文件中</p>
+</blockquote>
+<h2 id="2-Page-Frame-Management"><a href="#2-Page-Frame-Management" class="headerlink" title="2.Page Frame Management"></a>2.Page Frame Management</h2><blockquote>
+<p>此部分学习小内存分配，会有外部碎片的问题，即将学习Linux的分配模式。</p>
+<p>linux2.0采用几何分布分配的方法，也就是只能分配2的次幂大小的块，这就把内部碎片降低到了百分之50以内。</p>
+<p>伙伴算法并不能支持上述要求，因此提出一种新算法（源自： slab allocator）</p>
+</blockquote>
+<h3 id="2-1设计准则"><a href="#2-1设计准则" class="headerlink" title="2.1设计准则"></a>2.1设计准则</h3><blockquote>
+<p>先学习以下基本的设计理念。</p>
+</blockquote>
+<blockquote>
+<p>slab allocator算法基于以下几个准则设置的</p>
+</blockquote>
+<ul>
+<li><p><strong>存储的数据类型可能会影响内存区域的分配方式</strong>：例如，当内核为用户模式进程分配一个页面框架（page frame）时，内核会调用 <code>get_free_page()</code> 函数，该函数会将页面填充为全零，以确保新分配的内存没有残留数据。</p>
+<p><strong>slab 分配器的概念扩展了这一思想</strong>：它将内存区域视为对象，而这些对象不仅仅是简单的内存块，它们还包含一组数据结构和几个函数或方法，这些函数分别称为**构造函数（constructor）**和**析构函数（destructor）**。构造函数负责在内存分配时初始化该内存区域，而析构函数则负责在内存释放时对该内存区域进行清理。</p>
+<p>slab 分配器确实在分配之后不会自动清除数据，而是将已经分配但释放的对象缓存起来，以便在下次需要同类对象时可以快速重复使用，避免频繁的内存分配和释放操作。这确实意味着，当某个对象从 slab 缓存中被重新分配时，它仍然可能包含上次使用时的旧数据。这种行为是有意为之的，以提高系统性能，减少不必要的初始化开销。</p>
+<p>实际上，Linux 处理的内存区域不需要初始化或取消初始化。出于效率原因，Linux 并不依赖需要构造函数或析构函数的方法；引入 slab 分配器的主要动机是为了减少对伙伴系统分配器的调用。因此，尽管内核完全支持构造函数和析构函数的方法，但这些方法的指针通常都是 <code>NULL</code>。</p>
+</li>
+<li><p><strong>内核倾向于请求相同类型的区域</strong></p>
+</li>
+<li><p><strong>内存区域的请求可以根据其频率进行分类</strong>。对于某些特定大小且预期会频繁出现的请求，最有效的处理方式是创建一组具有合适大小的特殊用途对象，从而避免内部碎片化。与此同时，那些不常遇到的大小可以通过基于一系列几何分布大小的分配方案来处理（例如 Linux 2.0 中使用的 2 的幂次方大小），即使这种方法可能会导致内部碎片化。</p>
+</li>
+<li><p>数据结构的初始地址不容易集中在2的幂的分布上。</p>
+</li>
+<li><p>硬件缓存性能为尽可能减少对伙伴系统分配器调用提供了额外的理由：每次调用伙伴系统函数都会“弄脏”硬件缓存，从而增加平均内存访问时间。</p>
+</li>
+</ul>
+<blockquote>
+<p>组件图解：</p>
+<p><strong>Cache</strong>：表示对象缓存（object cache），它存储了用于特定类型对象的 slab。Cache 负责管理 slab 并根据需要分配和回收对象。</p>
+<p><strong>Slab</strong>：Slab 是分配的基本单位，它由若干个已经初始化的对象组成。每个 slab 都包含多个对象的内存块，这些对象可以被分配给程序使用。</p>
+<p><strong>Object</strong>：具体的对象实例存储在 slab 中，当系统请求分配对象时，分配器从 slab 中取出空闲的对象返回给程序。当对象被释放时，它会返回到 slab 中，以供以后再次使用。</p>
+<p>注：slab不会主动释放对象。</p>
+</blockquote>
+<p><img src="/img/mypic/linux/slab.png" alt="image-20240911211150355"></p>
+<h3 id="2-2数据结构"><a href="#2-2数据结构" class="headerlink" title="2.2数据结构"></a>2.2数据结构</h3><h4 id="2-2-1-OVERLOOK"><a href="#2-2-1-OVERLOOK" class="headerlink" title="2.2.1 OVERLOOK"></a>2.2.1 OVERLOOK</h4><blockquote>
+<p>linux2.6.10为例</p>
+</blockquote>
+<p>先理清不同数据结构之间的关系，slab.c中，一段注释描述的非常好。</p>
+<blockquote>
+<p>内存被组织成缓存区，每种对象类型都有一个缓存区。</p>
+<ul>
+<li>例如：<code>inode_cache</code>、<code>dentry_cache</code>、<code>buffer_head</code>、<code>vm_area_struct</code>。</li>
+<li>每个缓存区由多个 slab 组成（它们很小，通常只占用一页内存，并且始终是连续的），每个 slab 包含多个已初始化的对象。</li>
+</ul>
+<p>这意味着，构造函数只会在新分配的 slab 上使用，并且你必须将具有相同初始化的对象传递给 <code>kmem_cache_free</code> 函数。</p>
+<p>每个缓存区只能支持一种内存类型（如 <code>GFP_DMA</code>、<code>GFP_HIGHMEM</code>、普通内存）。如果需要特殊的内存类型，则必须为该内存类型创建一个新的缓存区。</p>
+<p>为了减少内存碎片，slab 被分成三类：</p>
+<ul>
+<li>已满的 slab（没有空闲对象）</li>
+<li>部分使用的 slab</li>
+<li>空的 slab（没有分配的对象）</li>
+</ul>
+<p>如果存在部分使用的 slab，则新的分配会从这些 slab 中获取，否则从空的 slab 中分配，或是分配新的 slab。</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">* The memory is organized in caches, one cache <span class="keyword">for</span> each object type.</span><br><span class="line">* (e.g. inode_cache, dentry_cache, buffer_head, vm_area_struct)</span><br><span class="line">* Each cache consists out of many <span class="title function_">slabs</span> <span class="params">(they are small (usually one</span></span><br><span class="line"><span class="params">* page <span class="type">long</span>) and always contiguous)</span>, and each slab contains multiple</span><br><span class="line">* initialized objects.</span><br><span class="line">*</span><br><span class="line">* This means, that your constructor is used only <span class="keyword">for</span> newly allocated</span><br><span class="line">* slabs and you must pass objects with the same intializations to</span><br><span class="line">* kmem_cache_free.</span><br><span class="line">*</span><br><span class="line">* Each cache can only support one memory <span class="title function_">type</span> <span class="params">(GFP_DMA, GFP_HIGHMEM,</span></span><br><span class="line"><span class="params">* normal)</span>. If you need a special memory type, then must create a new</span><br><span class="line">* cache <span class="keyword">for</span> that memory type.</span><br><span class="line">*</span><br><span class="line">* In order to reduce fragmentation, the slabs are sorted in 3 groups:</span><br><span class="line">*   full slabs with 0 <span class="built_in">free</span> objects</span><br><span class="line">*   partial slabs</span><br><span class="line">*   empty slabs with no allocated objects</span><br><span class="line">*</span><br><span class="line">* If partial slabs exist, then new allocations come from these slabs,</span><br><span class="line">* otherwise from empty slabs or new slabs are allocated.</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-2-2-Cache"><a href="#2-2-2-Cache" class="headerlink" title="2.2.2 Cache"></a>2.2.2 Cache</h4><blockquote>
+<p>每种Cache类型都有一个此结构体：</p>
+<h3 id="1-每个-CPU-的缓存-array-NR-CPUS"><a href="#1-每个-CPU-的缓存-array-NR-CPUS" class="headerlink" title="1. 每个 CPU 的缓存 (array[NR_CPUS])"></a>1. <strong>每个 CPU 的缓存 (<code>array[NR_CPUS]</code>)</strong></h3><ul>
+<li><code>struct array_cache *array[NR_CPUS]</code>：这是每个 CPU 的私有缓存结构，每个 CPU 都有自己的 <code>array_cache</code> 来缓存从 slab 中分配或释放的对象。这是 per-CPU 数据结构，用于减少全局锁竞争。</li>
+<li><code>batchcount</code> 和 <code>limit</code> 定义了每次批量操作的数量，以及每个 CPU 缓存中可以存放的对象的数量上限。</li>
+</ul>
+<h3 id="2-全局-slab-列表-lists"><a href="#2-全局-slab-列表-lists" class="headerlink" title="2. 全局 slab 列表 (lists)"></a>2. <strong>全局 slab 列表 (<code>lists</code>)</strong></h3><ul>
+<li><code>struct kmem_list3 lists</code>：这个结构体用于存放和管理全局的 slab 列表。Slab 分为三类：完全分配的 slab、部分使用的 slab 和空的 slab。</li>
+<li>Slab 分配和释放时，首先检查 per-CPU 缓存（<code>array_cache</code>），如果缓存中有空闲对象，可以直接从中分配或将对象释放回缓存。如果 per-CPU 缓存满了或耗尽，则会与 <code>lists</code> 中的全局 slab 进行交互，从全局 slab 列表中分配或释放对象。</li>
+</ul>
+<h3 id="3-对象和-slab-的尺寸信息"><a href="#3-对象和-slab-的尺寸信息" class="headerlink" title="3. 对象和 slab 的尺寸信息"></a>3. <strong>对象和 slab 的尺寸信息</strong></h3><ul>
+<li><code>objsize</code>：表示每个对象的大小，Slab 分配器需要知道每个 slab 能够容纳的对象数量。</li>
+<li><code>num</code>：表示每个 slab 可以容纳的对象数量，这个值根据 <code>objsize</code> 和内存页大小计算得出。</li>
+<li><code>slab_size</code>：表示每个 slab 的大小，通常是以页为单位（如 4KB）。通过 <code>gfporder</code> 决定每个 slab 的页数，即以 2 的幂次表示。</li>
+</ul>
+<h3 id="4-Slab-的分配和释放控制"><a href="#4-Slab-的分配和释放控制" class="headerlink" title="4. Slab 的分配和释放控制"></a>4. <strong>Slab 的分配和释放控制</strong></h3><ul>
+<li><code>gfporder</code>：定义每个 slab 分配的内存页数，通常是 2 的幂次。<code>gfporder=0</code> 表示每个 slab 占用 1 页（通常是 4KB），<code>gfporder=1</code> 表示占用 2 页。</li>
+<li><code>gfpflags</code>：定义 slab 分配时使用的内存分配标志，通常包括 GFP 高优先级（如 <code>GFP_KERNEL</code>、<code>GFP_DMA</code> 等），用于定义内存分配策略。</li>
+<li><code>spinlock</code>：用于在多处理器系统中对全局 slab 进行同步，防止并发访问冲突。这个锁主要在 <code>lists</code> 中的 slab 分配和回收时使用。</li>
+</ul>
+<h3 id="5-颜色优化（cache-colouring）"><a href="#5-颜色优化（cache-colouring）" class="headerlink" title="5. 颜色优化（cache colouring）"></a>5. <strong>颜色优化（cache colouring）</strong></h3><ul>
+<li><code>colour</code>、<code>colour_off</code>、<code>colour_next</code>：这些字段用于实现缓存着色（cache colouring）技术，缓存着色的主要目的是为了减少缓存冲突，提高缓存命中率。它通过在每次分配 slab 时在不同的偏移位置开始分配对象，从而避免多个对象在缓存中的地址出现冲突。</li>
+</ul>
+<h3 id="6-构造和析构函数"><a href="#6-构造和析构函数" class="headerlink" title="6. 构造和析构函数"></a>6. <strong>构造和析构函数</strong></h3><ul>
+<li><code>ctor</code> 和 <code>dtor</code>：这些是构造函数和析构函数指针，用于在分配 slab 时对对象进行初始化（构造）和在释放时执行清理（析构）。这有助于在对象分配和回收时保持一致性和清理工作。</li>
+</ul>
+<h3 id="7-Slab-的分配和增长"><a href="#7-Slab-的分配和增长" class="headerlink" title="7. Slab 的分配和增长"></a>7. <strong>Slab 的分配和增长</strong></h3><ul>
+<li>Slab 的增长机制（<code>cache_grow</code>）是在当前缓存不够时，分配新的 slab 并将其添加到全局或 per-CPU 的 slab 列表中。<code>kmem_cache_s</code> 中的 <code>gfporder</code> 和 <code>gfpflags</code> 控制 slab 的增长过程。</li>
+<li>当内存紧张时，Slab 分配器也会通过 <code>cache_shrink</code> 机制来释放多余的 slab，这些 slab 的状态是空闲的，意味着没有分配的对象。</li>
+</ul>
+<h3 id="8-统计信息（可选）"><a href="#8-统计信息（可选）" class="headerlink" title="8. 统计信息（可选）"></a>8. <strong>统计信息（可选）</strong></h3><ul>
+<li>如果开启了 <code>STATS</code> 宏，<code>kmem_cache_s</code> 还可以跟踪相关的统计信息，如活跃对象数量、分配次数、释放次数、缓存命中率等。</li>
+<li>这些统计信息有助于分析和优化内存分配的性能。</li>
+</ul>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">kmem_cache_s</span> &#123;</span></span><br><span class="line"><span class="comment">/* 1) per-cpu data, touched during every alloc/free */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">array_cache</span>	*<span class="title">array</span>[<span class="title">NR_CPUS</span>];</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		batchcount;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		limit;</span><br><span class="line"><span class="comment">/* 2) touched by every alloc &amp; free from the backend */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">kmem_list3</span>	<span class="title">lists</span>;</span></span><br><span class="line">	<span class="comment">/* NUMA: kmem_3list_t	*nodelists[MAX_NUMNODES] */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		objsize;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>	 	flags;	<span class="comment">/* constant flags */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		num;	<span class="comment">/* # of objs per slab */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		free_limit; <span class="comment">/* upper limit of objects in the lists */</span></span><br><span class="line">	<span class="type">spinlock_t</span>		spinlock;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 3) cache_grow/shrink */</span></span><br><span class="line">	<span class="comment">/* order of pgs per slab (2^n) */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		gfporder;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* force GFP flags, e.g. GFP_DMA */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		gfpflags;</span><br><span class="line"></span><br><span class="line">	<span class="type">size_t</span>			colour;		<span class="comment">/* cache colouring range */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		colour_off;	<span class="comment">/* colour offset */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		colour_next;	<span class="comment">/* cache colouring */</span></span><br><span class="line">	<span class="type">kmem_cache_t</span>		*slabp_cache;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		slab_size;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		dflags;		<span class="comment">/* dynamic flags */</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* constructor func */</span></span><br><span class="line">	<span class="type">void</span> (*ctor)(<span class="type">void</span> *, <span class="type">kmem_cache_t</span> *, <span class="type">unsigned</span> <span class="type">long</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* de-constructor func */</span></span><br><span class="line">	<span class="type">void</span> (*dtor)(<span class="type">void</span> *, <span class="type">kmem_cache_t</span> *, <span class="type">unsigned</span> <span class="type">long</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 4) cache creation/removal */</span></span><br><span class="line">	<span class="type">const</span> <span class="type">char</span>		*name;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>	<span class="title">next</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 5) statistics */</span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> STATS</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		num_active;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		num_allocations;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		high_mark;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		grown;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		reaped;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span> 		errors;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		max_freeable;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		node_allocs;</span><br><span class="line">	<span class="type">atomic_t</span>		allochit;</span><br><span class="line">	<span class="type">atomic_t</span>		allocmiss;</span><br><span class="line">	<span class="type">atomic_t</span>		freehit;</span><br><span class="line">	<span class="type">atomic_t</span>		freemiss;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> DEBUG</span></span><br><span class="line">	<span class="type">int</span>			dbghead;</span><br><span class="line">	<span class="type">int</span>			reallen;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>关于<code>struct array_cache	*array[NR_CPUS];</code>,其中存放了每个cpu的缓存对象，可以不访问全局slab而直接访问缓存对象,可有效防止同步竞争。具体结构体为：</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">array_cache</span> &#123;</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> avail;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> limit;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> batchcount;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> touched;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* bootstrap: The caches do not work without cpuarrays anymore,</span></span><br><span class="line"><span class="comment"> * but the cpuarrays are allocated from the generic caches...</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BOOT_CPUCACHE_ENTRIES	1</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">arraycache_init</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">array_cache</span> <span class="title">cache</span>;</span></span><br><span class="line">	<span class="type">void</span> * entries[BOOT_CPUCACHE_ENTRIES];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-2-3-slab"><a href="#2-2-3-slab" class="headerlink" title="2.2.3 slab"></a>2.2.3 slab</h4><blockquote>
+<p>利用s_mem来存储obj</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * The slab lists of all objects.</span></span><br><span class="line"><span class="comment"> * Hopefully reduce the internal fragmentation</span></span><br><span class="line"><span class="comment"> * NUMA: The spinlock could be moved from the kmem_cache_t</span></span><br><span class="line"><span class="comment"> * into this structure, too. Figure out what causes</span></span><br><span class="line"><span class="comment"> * fewer cross-node spinlock operations.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">kmem_list3</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>	<span class="title">slabs_partial</span>;</span>	<span class="comment">/* partial list first, better asm code */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>	<span class="title">slabs_full</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>	<span class="title">slabs_free</span>;</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>	free_objects;</span><br><span class="line">	<span class="type">int</span>		free_touched;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>	next_reap;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">array_cache</span>	*<span class="title">shared</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">slab</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>	<span class="title">list</span>;</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		colouroff;</span><br><span class="line">	<span class="type">void</span>			*s_mem;		<span class="comment">/* including colour offset */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		inuse;		<span class="comment">/* num of objs active in slab */</span></span><br><span class="line">	<span class="type">kmem_bufctl_t</span>		<span class="built_in">free</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">陌影形</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2024/09/11/linux%E5%86%85%E6%A0%B8/%E5%88%9D%E6%8E%A2/%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/">http://example.com/2024/09/11/linux%E5%86%85%E6%A0%B8/%E5%88%9D%E6%8E%A2/%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/linux%E5%86%85%E6%A0%B8/">linux内核</a></div><div class="post_share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/09/14/iot/iot%E5%88%9D%E6%8E%A2/" title=""><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">Previous</div><div class="prev_info"></div></div></a></div><div class="next-post pull-right"><a href="/2024/09/10/ABI/c++%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="异常处理机制"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">Next</div><div class="next_info">异常处理机制</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2024/08/19/linux%E5%86%85%E6%A0%B8/%E5%88%9D%E6%8E%A2/os%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F1/" title="os文件系统"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-19</div><div class="title">os文件系统</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div id="lv-container" data-id="city" data-uid="MTAyMC82MDAzNi8zNjQ5OQ=="></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">陌影形</div><div class="author-info__description">MYX</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">53</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">17</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">17</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MoyInGxing"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/MoyInGxing" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-number">1.</span> <span class="toc-text">参考链接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Page-Frame-Management"><span class="toc-number">2.</span> <span class="toc-text">1.Page Frame Management</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-page-frame"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 page frame</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-ARRAY"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 ARRAY</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-The-Buddy-System-Algorithm"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 The Buddy System Algorithm</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-1-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">2.3.1.</span> <span class="toc-text">1.3.1 数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#ZONE"><span class="toc-number">2.3.1.1.</span> <span class="toc-text">ZONE</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#free-area"><span class="toc-number">2.3.1.2.</span> <span class="toc-text">free_area</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-2-%E7%AE%97%E6%B3%95%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.3.2.</span> <span class="toc-text">1.3.2 算法实现</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Page-Frame-Management"><span class="toc-number">3.</span> <span class="toc-text">2.Page Frame Management</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1%E8%AE%BE%E8%AE%A1%E5%87%86%E5%88%99"><span class="toc-number">3.1.</span> <span class="toc-text">2.1设计准则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">3.2.</span> <span class="toc-text">2.2数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-OVERLOOK"><span class="toc-number">3.2.1.</span> <span class="toc-text">2.2.1 OVERLOOK</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-Cache"><span class="toc-number">3.2.2.</span> <span class="toc-text">2.2.2 Cache</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%AF%8F%E4%B8%AA-CPU-%E7%9A%84%E7%BC%93%E5%AD%98-array-NR-CPUS"><span class="toc-number">3.3.</span> <span class="toc-text">1. 每个 CPU 的缓存 (array[NR_CPUS])</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%85%A8%E5%B1%80-slab-%E5%88%97%E8%A1%A8-lists"><span class="toc-number">3.4.</span> <span class="toc-text">2. 全局 slab 列表 (lists)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%AF%B9%E8%B1%A1%E5%92%8C-slab-%E7%9A%84%E5%B0%BA%E5%AF%B8%E4%BF%A1%E6%81%AF"><span class="toc-number">3.5.</span> <span class="toc-text">3. 对象和 slab 的尺寸信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Slab-%E7%9A%84%E5%88%86%E9%85%8D%E5%92%8C%E9%87%8A%E6%94%BE%E6%8E%A7%E5%88%B6"><span class="toc-number">3.6.</span> <span class="toc-text">4. Slab 的分配和释放控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E9%A2%9C%E8%89%B2%E4%BC%98%E5%8C%96%EF%BC%88cache-colouring%EF%BC%89"><span class="toc-number">3.7.</span> <span class="toc-text">5. 颜色优化（cache colouring）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E6%9E%84%E9%80%A0%E5%92%8C%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0"><span class="toc-number">3.8.</span> <span class="toc-text">6. 构造和析构函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-Slab-%E7%9A%84%E5%88%86%E9%85%8D%E5%92%8C%E5%A2%9E%E9%95%BF"><span class="toc-number">3.9.</span> <span class="toc-text">7. Slab 的分配和增长</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-%E7%BB%9F%E8%AE%A1%E4%BF%A1%E6%81%AF%EF%BC%88%E5%8F%AF%E9%80%89%EF%BC%89"><span class="toc-number">3.10.</span> <span class="toc-text">8. 统计信息（可选）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-3-slab"><span class="toc-number">3.10.1.</span> <span class="toc-text">2.2.3 slab</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/22/C++/%E7%B1%BB/" title="C++类机制">C++类机制</a><time datetime="2024-09-22T09:45:08.000Z" title="Created 2024-09-22 17:45:08">2024-09-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/20/linux%E5%86%85%E6%A0%B8/linux5.15%E5%88%86%E6%9E%90/%E5%85%B3%E4%BA%8Epage%E5%88%86%E9%85%8D/" title="linux5.15之page分配">linux5.15之page分配</a><time datetime="2024-09-20T09:45:08.000Z" title="Created 2024-09-20 17:45:08">2024-09-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/19/%E5%AF%86%E7%A0%81%E5%AD%A6/%E4%BF%A1%E6%81%AF%E8%AE%BA/" title="Untitled">Untitled</a><time datetime="2024-09-19T00:40:05.460Z" title="Created 2024-09-19 08:40:05">2024-09-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/17/%E5%AF%86%E7%A0%81%E5%AD%A6/%E5%AE%9E%E6%88%98/" title="密码学实战">密码学实战</a><time datetime="2024-09-17T09:45:08.000Z" title="Created 2024-09-17 17:45:08">2024-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/16/linux%E5%86%85%E6%A0%B8/linux5.15%E5%88%86%E6%9E%90/%E5%85%B3%E4%BA%8Epage/" title="linux5.15之page">linux5.15之page</a><time datetime="2024-09-16T09:45:08.000Z" title="Created 2024-09-16 17:45:08">2024-09-16</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/footer.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2024 By 陌影形</div><div class="footer_custom_text">END</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(()=>{
+  const loadLivere = () => {
+    if (typeof LivereTower === 'object') window.LivereTower.init()
+    else {
+      (function(d, s) {
+          var j, e = d.getElementsByTagName(s)[0];
+          if (typeof LivereTower === 'function') { return; }
+          j = d.createElement(s);
+          j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+          j.async = true;
+          e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    }
+  }
+
+  if ('Livere' === 'Livere' || !false) {
+    if (false) btf.loadComment(document.getElementById('lv-container'), loadLivere)
+    else loadLivere()
+  } else {
+    window.loadOtherComment = loadLivere
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

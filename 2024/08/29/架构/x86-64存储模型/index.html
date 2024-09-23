@@ -1,0 +1,281 @@
+<!DOCTYPE html><html lang="Chinese" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>x86-64存储模型 | MoYingXing</title><meta name="author" content="陌影形"><meta name="copyright" content="陌影形"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="总览system register（硬件基础，寄存器是计算机硬件的一个抽象，体系结构的思想） CR:用于控制系统的重要行为，例如分页分段之类 System-Flags Register：一些标志位，进入内核态时需要保存 Descriptor-Table Registers：指向一些描述内存的数据结构 Task- Reg ： 包含任务状态段的位置以及大小 Debug Registers：控制软件调试">
+<meta property="og:type" content="article">
+<meta property="og:title" content="x86-64存储模型">
+<meta property="og:url" content="http://example.com/2024/08/29/%E6%9E%B6%E6%9E%84/x86-64%E5%AD%98%E5%82%A8%E6%A8%A1%E5%9E%8B/index.html">
+<meta property="og:site_name" content="MoYingXing">
+<meta property="og:description" content="总览system register（硬件基础，寄存器是计算机硬件的一个抽象，体系结构的思想） CR:用于控制系统的重要行为，例如分页分段之类 System-Flags Register：一些标志位，进入内核态时需要保存 Descriptor-Table Registers：指向一些描述内存的数据结构 Task- Reg ： 包含任务状态段的位置以及大小 Debug Registers：控制软件调试">
+<meta property="og:locale">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/162703063?s=400&u=7f599e5661244ad7e8490354a9580880dc56acde&v=4">
+<meta property="article:published_time" content="2024-08-29T12:13:31.000Z">
+<meta property="article:modified_time" content="2024-09-23T05:14:06.000Z">
+<meta property="article:author" content="陌影形">
+<meta property="article:tag" content="架构">
+<meta property="article:tag" content="x86-64">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/162703063?s=400&u=7f599e5661244ad7e8490354a9580880dc56acde&v=4"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2024/08/29/%E6%9E%B6%E6%9E%84/x86-64%E5%AD%98%E5%82%A8%E6%A8%A1%E5%9E%8B/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Error',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'x86-64存储模型',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-09-23 13:14:06'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">53</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">17</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">17</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/cov.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="MoYingXing"><img class="site-icon" src="/img/favicon.png"/><span class="site-name">MoYingXing</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">x86-64存储模型</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2024-08-29T12:13:31.000Z" title="Created 2024-08-29 20:13:31">2024-08-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-09-23T05:14:06.000Z" title="Updated 2024-09-23 13:14:06">2024-09-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%9E%B6%E6%9E%84/">架构</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%9E%B6%E6%9E%84/x86-64/">x86-64</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="x86-64存储模型"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="总览"><a href="#总览" class="headerlink" title="总览"></a>总览</h2><h3 id="system-register（硬件基础，寄存器是计算机硬件的一个抽象，体系结构的思想）"><a href="#system-register（硬件基础，寄存器是计算机硬件的一个抽象，体系结构的思想）" class="headerlink" title="system register（硬件基础，寄存器是计算机硬件的一个抽象，体系结构的思想）"></a>system register（硬件基础，寄存器是计算机硬件的一个抽象，体系结构的思想）</h3><blockquote>
+<p>CR:用于控制系统的重要行为，例如分页分段之类</p>
+<p><em>System-Flags Register</em>：一些标志位，进入内核态时需要保存</p>
+<p><em>Descriptor-Table Registers</em>：指向一些描述内存的数据结构</p>
+<p>Task- Reg ： 包含任务状态段的位置以及大小</p>
+<p><em>Debug Registers</em>：控制软件调试</p>
+<p><em>Extended-Feature-Enable Register</em>：EFER寄存器用于启用和报告非由CRn控制寄存器控制的特殊功能的状态。特别是，EFER被用于控制长模式的激活。</p>
+<p><em>System-Configuration Register</em>：启用和配置系统总线功能。</p>
+<p><em>System-Linkage Registers</em>：这些寄存器被系统链接指令用于指定操作系统入口点、堆栈位置和指向系统数据结构的指针。（可以看出若陷入os，其作用及其重要）</p>
+<p><em>Memory-Typing Registers</em>：目前没见过用法</p>
+<p><em>Debug-Extension Registers</em>：debug扩展</p>
+<p><em>Performance-Monitoring Registers</em>：性能监视寄存器用于计数处理器和系统事件，或事件的持续时间。</p>
+<p><em>Machine-Check Registers</em>：机器检查寄存器控制处理器对不可恢复故障的响应。它们还用于将有关此类故障的信息报告给旨在响应此类故障的系统实用程序。</p>
+</blockquote>
+<p><img src="/img/mypic/kernelpwn/sysregs.png" alt="sysregs"></p>
+<h3 id="System-Data-Structures（软件基础）"><a href="#System-Data-Structures（软件基础）" class="headerlink" title="System-Data Structures（软件基础）"></a><strong>System-Data Structures</strong>（软件基础）</h3><blockquote>
+<p>系统数据结构由系统软件创建和维护，以供处理器在受保护模式下运行时使用。在受保护模式下运行的处理器使用这些数据结构来管理内存和保护，并在中断或任务切换发生时存储程序状态信息</p>
+<p>descriptors：描述符向处理器提供有关段的信息，例如它的位置、大小和特权级别。一种特殊类型的描述符，称为门，用于为软件例程提供代码选择器和入口点。可以定义任意数量的描述符，但是系统软件必须至少要为当前执行的代码段和堆栈段创建一个描述符。</p>
+<p>descriptor table：全局描述符表包含对所有程序都可用的描述符，而本地描述符表包含由单个程序所使用的描述符。中断描述符表只包含由中断处理所使用的gate描述符</p>
+<p>task-state segment：任务状态段是用于保存特定程序或任务的处理器状态信息的特殊段。它还包含在切换到更多特权程序时使用的堆栈指针。硬件多任务处理机制在挂起和恢复任务时使用段中的状态信息。调用和对交换堆栈的中断会导致从任务状态段读取堆栈指针。</p>
+<p><em>Page-Translation Tables</em>：</p>
+</blockquote>
+<p><img src="/img/mypic/kernelpwn/sysdatastructor.png" alt="sysdatastructor"></p>
+<h2 id="内存模型"><a href="#内存模型" class="headerlink" title="内存模型"></a>内存模型</h2><blockquote>
+<p>这个是策略，机制是分段和分页以及地址的表示形式那些。</p>
+</blockquote>
+<blockquote>
+<p>感觉好复杂，主要看一下保护模式下的内存模型吧,文档原话</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">传统的x86架构支持一种段翻译机制，允许系统软件将指令和数据重新定位并隔离到虚拟内存空间中的任意位置。一个段是在线性地址空间内的一块连续内存。段在线性地址空间中的大小和位置是任意的。指令和数据可以分配到一个或多个内存段中，每个段都有其自身的保护特性。处理器硬件强制执行规则，规定一个段是否可以访问另一个段。</span><br><span class="line"></span><br><span class="line">分段机制提供了十个段寄存器，每个寄存器定义了一个段。这十个段寄存器中有六个（CS、DS、ES、FS、GS 和 SS）定义了用户段。用户段存储软件、数据和栈，可以被应用软件和系统软件使用。剩下的四个段寄存器（GDT、LDT、IDT 和 TR）定义了系统段。系统段包含的数据结构仅由系统软件初始化和使用。段寄存器包含一个基址，指向段的起始位置；一个限值，定义段的大小；以及定义段保护特性的属性。</span><br><span class="line"></span><br><span class="line">尽管分段在软件和数据的重新定位和保护方面提供了很大的灵活性，但通常通过结合软件和硬件分页支持来处理内存隔离和重新定位更加高效。因此，大多数现代系统软件绕过了分段功能。然而，分段不能完全禁用，理解分段机制对于实现长模式（long mode）系统软件仍然非常重要。</span><br></pre></td></tr></table></figure>
+
+<h3 id="实模式"><a href="#实模式" class="headerlink" title="实模式"></a>实模式</h3><blockquote>
+<p>如其名，不赘述了</p>
+</blockquote>
+<h3 id="Virtual-8086-Mode-Segmentation"><a href="#Virtual-8086-Mode-Segmentation" class="headerlink" title="Virtual-8086 Mode Segmentation"></a><strong>Virtual-8086 Mode Segmentation</strong></h3><blockquote>
+<p>到这好像有虚拟内存了，然后利用分段，实现了更多的空间利用，但是感觉分页并不成熟</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">虚拟8086模式支持在保护模式下运行16位实模式程序（详见下文）。它使用了一种简单的内存分段方式，可选的分页机制，以及有限的保护检查。在虚拟8086模式下运行的程序最多可以访问1MB的内存空间。</span><br><span class="line"></span><br><span class="line">与实模式下的分段一样，每个64K的段（CS、DS、ES、FS、GS、SS）在16字节边界上对齐。段基址是给定段中的最低地址，等于段选择子乘以16。POP和MOV指令的工作方式与实模式完全相同，可以用来将一个（可能是新的）段选择子加载到某个段寄存器中。当发生这种情况时，选择子会更新，段基址会被设置为选择子乘以16。段限值和段属性不会改变，通常它们分别是64K（允许的最大限值）和读/写数据。</span><br><span class="line"></span><br><span class="line">除中断和异常外，远程传输（FAR transfers）的操作与实模式相同。在远程传输时，CS（代码段）选择子会更新为新值，CS段基址会设置为选择子乘以16。CS段限值和属性保持不变，但通常分别为64K和读/写属性。中断和异常会将处理器切换到保护模式。（更多信息请参见第8章“异常和中断”）。</span><br></pre></td></tr></table></figure>
+
+<h3 id="Protected-Mode-Segmented-Memory-Models"><a href="#Protected-Mode-Segmented-Memory-Models" class="headerlink" title="Protected Mode Segmented-Memory Models"></a><strong>Protected Mode Segmented-Memory Models</strong></h3><blockquote>
+<p>现在的主流，若开启部分分段，则可以向后兼容，如果全分页的话就是平坦内存模式</p>
+</blockquote>
+<h4 id="Multi-Segmented-Model"><a href="#Multi-Segmented-Model" class="headerlink" title="Multi-Segmented Model"></a><strong>Multi-Segmented Model</strong></h4><blockquote>
+<p>分段分页结合体，可以多个段映射到一个页或一个段映射到多个页</p>
+</blockquote>
+<h4 id="Flat-Memory-Model"><a href="#Flat-Memory-Model" class="headerlink" title="Flat-Memory Model"></a><strong>Flat-Memory Model</strong></h4><blockquote>
+<p>将段寄存器的基址置零，段限制在4GB，则可用4GB的连续的虚拟内存空间</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">在64位模式下，分段机制被禁用了。分段硬件会忽略段基址值，并将其视为0。同样，段限值和大多数段属性也会被忽略。不过，有几个例外情况。CS段的DPL、D和L属性仍然会被使用，分别用于确定程序的特权级别、默认操作数大小，以及程序是在64位模式还是兼容模式下运行。FS和GS段可以在地址计算中用作额外的基址寄存器，并且这些段可以具有非零的基址值。这一特性有助于访问线程局部数据（thread-local data）和某些系统软件的数据结构。有关在64位模式下FS和GS段的详细信息，请参阅第80页的“64位模式下的FS和GS寄存器”。系统段寄存器在64位模式下始终会被使用</span><br></pre></td></tr></table></figure>
+
+<h2 id="Segment-Selectors-and-Registers"><a href="#Segment-Selectors-and-Registers" class="headerlink" title="Segment Selectors and Registers"></a><strong>Segment Selectors and Registers</strong></h2><blockquote>
+<p>此部分讲解了段寄存器中存储的内容的结构</p>
+</blockquote>
+<h3 id="Segment-Selectors"><a href="#Segment-Selectors" class="headerlink" title="Segment Selectors"></a>Segment Selectors</h3><blockquote>
+<p>Segment selectors are pointers to specific entries in the global and local descriptor tables.</p>
+</blockquote>
+<p><img src="/img/mypic/kernelpwn/segmentselector.png" alt="segmentselector"></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">选择子索引字段（Selector Index Field）：位于位15:3。选择子索引字段指定描述符表中的一个条目。描述符表中的条目是8字节长，因此选择子索引会乘以8来形成描述符表中的字节偏移量。然后，将该偏移量加到全局或本地描述符表基址（由表索引位指示）上，以在虚拟地址空间中形成描述符条目的地址。 在长模式下，一些描述符条目是16字节长，而不是8字节（有关长模式描述符表条目的更多信息，请参阅第88页的“遗留段描述符”）。这些扩展的描述符在描述符表中占用了两个条目。然而，长模式仍然将选择子索引乘以8来形成描述符表的偏移量。系统软件负责分配选择子，以便它们正确地指向扩展条目的起始位置。</span><br><span class="line"></span><br><span class="line">表指示符（TI）位（Table Indicator (TI) Bit）：位于位2。TI位指示哪个表保存了选择子索引引用的描述符。当TI=0时，使用GDT（全局描述符表），当TI=1时，使用LDT（本地描述符表）。从适当的描述符表寄存器中读取描述符表基址，并将其加到上述的缩放选择子索引上。</span><br><span class="line"></span><br><span class="line">请求者特权级（RPL）字段（Requestor Privilege-Level (RPL) Field）：位于位1:0。RPL表示创建选择子时处理器运行的特权级别（CPL）。 RPL用于段特权检查，以防止低特权级别的软件访问特权数据。有关段特权检查的更多信息，请参阅第106页的“数据访问特权检查”和第109页的“控制传输特权检查”。</span><br><span class="line">空选择子：目前没看懂啥意思先遗留一下</span><br></pre></td></tr></table></figure>
+
+<h3 id="Segment-Registers"><a href="#Segment-Registers" class="headerlink" title="Segment Registers"></a>Segment Registers</h3><blockquote>
+<p>存储段结构的硬件基础，此处只看了64位程序的</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">64位模式下的CS寄存器：在64位模式下，CS寄存器的隐藏部分大部分被忽略。只有L（长模式）、D（默认操作数大小）和DPL（描述符特权级别）属性在64位模式下被识别。地址计算假定CS.base的值为0。CS引用不会检查CS.limit值，而是检查有效地址是否为规范形式（canonical form）。</span><br><span class="line"></span><br><span class="line">64位模式下的DS、ES和SS寄存器：在64位模式下，ES、DS和SS段寄存器的内容被忽略。段寄存器隐藏部分的所有字段（基址、限值和属性）都被忽略。在64位模式下，引用ES、DS或SS段的地址计算被视为段基址为0。处理器不会执行限值检查，而是检查所有虚拟地址引用是否为规范形式。</span><br><span class="line"></span><br><span class="line">启用和激活长模式或在64位模式和兼容模式之间切换时，不会改变段寄存器的可见部分或隐藏部分的内容。除非执行显式的段加载操作，否则这些寄存器在64位模式执行期间保持不变。</span><br><span class="line"></span><br><span class="line">64位模式下的FS和GS寄存器：与CS、DS、ES和SS段不同，FS和GS段覆盖在64位模式下可以使用。当在64位模式下使用FS和GS段覆盖时，它们各自的基址会在有效地址（EA）计算中使用。完整的EA计算公式为：(FS或GS).base + base + (scale * index) + displacement。FS.base和GS.base的值也被扩展为完整的64位虚拟地址，如图4-5所示。在64位线性地址计算中的任何溢出都会被忽略，结果地址将环绕到地址空间的另一端。</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>gs和fs的特殊更新方式</p>
+<p>貌似段寄存器有隐藏部分，需要特殊处理</p>
+<p>没看懂回来补上，貌似段寄存器有隐藏部分，因此赋值要额外小心，并且gs和fs也是64位需要用的</p>
+</blockquote>
+<h2 id="段描述符表"><a href="#段描述符表" class="headerlink" title="段描述符表"></a>段描述符表</h2><blockquote>
+<p> 虽然64位平坦模式用户层已经基本没有了分段机制，但是0环还存在着，因此需要理解描述符表，主要分为三个，分别为GDT,LDT，IDT</p>
+<p>软件通过初始化其相应的描述符-表寄存器来建立描述符表在内存中的位置。下面的部分将描述描述符表寄存器和描述符表。</p>
+</blockquote>
+<h3 id="GDT"><a href="#GDT" class="headerlink" title="GDT"></a>GDT</h3><blockquote>
+<p>保护模式下的系统软件必须创建一个全局描述符表（GDT）。GDT包含了代码段和数据段的描述符条目（用户段），这些段可以被所有任务共享。除了用户段外，GDT还可以包含门描述符和其他系统段描述符。系统软件可以将GDT存储在内存中的任何位置，并且应该保护包含GDT的段，使其不被非特权软件访问。寻表方式如下：（如果要理解的话需要理解空选择子还要理解实模式和80386模式下的段描述符）</p>
+</blockquote>
+<p><img src="/img/mypic/kernelpwn/image-20240923125736202.png" alt="image-20240923125736202"></p>
+<blockquote>
+<p>长地址模式下的GDTR和IDTR格式</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">限值（Limit）：2字节。这些位定义了GDT（全局描述符表）的16位限值或大小（以字节为单位）。限值与基址相加得到GDT的结束字节地址。如果软件尝试访问超出GDT限值的描述符，将会发生一般保护异常（#GP）。</span><br><span class="line"></span><br><span class="line">AMD64架构在长模式下不扩展描述符表的偏移量。因此，GDTR（全局描述符表寄存器）和IDTR（中断描述符表寄存器）的限值字段大小与传统大小保持不变。处理器在长模式下访问GDT和IDT时仍然会检查这些限值。</span><br><span class="line"></span><br><span class="line">基址（Base Address）：8字节。基址字段保存GDT在虚拟内存空间中的起始字节地址。GDT可以位于虚拟内存中的任何字节地址，但系统软件应将GDT对齐到四字边界（quadword boundary），以避免访问未对齐数据时可能产生的性能损失。</span><br><span class="line"></span><br><span class="line">AMD64架构将GDTR的基址字段扩展为64位，以便在长模式下运行的系统软件可以在64位虚拟地址空间中的任意位置定位GDT。当处理器在传统模式下运行时，它会忽略基址的高4字节。</span><br></pre></td></tr></table></figure>
+
+<p><img src="/img/mypic/kernelpwn/GDTR.png" alt="GDTR"></p>
+<h3 id="LDT"><a href="#LDT" class="headerlink" title="LDT"></a>LDT</h3><h3 id="GDT-1"><a href="#GDT-1" class="headerlink" title="GDT"></a>GDT</h3><h2 id="系统寄存器详解"><a href="#系统寄存器详解" class="headerlink" title="系统寄存器详解"></a>系统寄存器详解</h2><h3 id="RFLAGS"><a href="#RFLAGS" class="headerlink" title="RFLAGS"></a>RFLAGS</h3><p>包含控制位和状态位，控制位中含有权限信息，状态位则是用来保存算数运算的状态，内核态到用户态需要恢复</p>
+<h2 id="部分内核级指令"><a href="#部分内核级指令" class="headerlink" title="部分内核级指令"></a>部分内核级指令</h2><h3 id="Fast-System-Call-and-Return"><a href="#Fast-System-Call-and-Return" class="headerlink" title="Fast System Call and Return"></a><strong>Fast System Call and Return</strong></h3><h4 id="SYSCALL-and-SYSRET"><a href="#SYSCALL-and-SYSRET" class="headerlink" title="SYSCALL and SYSRET"></a><strong>SYSCALL and SYSRET</strong></h4><h4 id="SYSENTER-and-SYSEXIT-Legacy-Mode-Only"><a href="#SYSENTER-and-SYSEXIT-Legacy-Mode-Only" class="headerlink" title="SYSENTER and SYSEXIT (Legacy Mode Only)"></a><strong>SYSENTER and SYSEXIT (Legacy Mode Only)</strong></h4><h4 id="SWAPGS"><a href="#SWAPGS" class="headerlink" title="SWAPGS"></a><strong>SWAPGS</strong></h4><blockquote>
+<p>SWAPGS指令为系统软件提供了一种加载系统数据结构指针的快速方法。SWAPGS可以在由于系统切换指令或由于中断或异常而进入系统软件例程时使用。在返回到应用程序软件之前，SWAPGS可以恢复一个被系统数据结构指针所取代的应用程序数据结构指针。</p>
+</blockquote>
+<h2 id="内核指令字典"><a href="#内核指令字典" class="headerlink" title="内核指令字典"></a>内核指令字典</h2><h3 id="IRETQ"><a href="#IRETQ" class="headerlink" title="IRETQ"></a><strong>IRETQ</strong></h3><blockquote>
+<p>将程序控制流从异常处理返回，并置位相关寄存器，会返回flags，cs，rip，如果cpl变化，ss和rsp也将被返回，</p>
+<p>示例代码如下：</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">restore_state</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="keyword">asm</span> <span class="title function_">volatile</span><span class="params">(<span class="string">&quot;swapgs ;&quot;</span></span></span><br><span class="line"><span class="params">               <span class="string">&quot;movq %0, 0x20(%%rsp)\t\n&quot;</span> <span class="comment">//ss</span></span></span><br><span class="line"><span class="params">               <span class="string">&quot;movq %1, 0x18(%%rsp)\t\n&quot;</span> <span class="comment">//rsp</span></span></span><br><span class="line"><span class="params">               <span class="string">&quot;movq %2, 0x10(%%rsp)\t\n&quot;</span> <span class="comment">//flag</span></span></span><br><span class="line"><span class="params">               <span class="string">&quot;movq %3, 0x08(%%rsp)\t\n&quot;</span> <span class="comment">//cs</span></span></span><br><span class="line"><span class="params">               <span class="string">&quot;movq %4, 0x00(%%rsp)\t\n&quot;</span> <span class="comment">//rip</span></span></span><br><span class="line"><span class="params">               <span class="string">&quot;iretq&quot;</span></span></span><br><span class="line"><span class="params">               :</span></span><br><span class="line"><span class="params">               : <span class="string">&quot;r&quot;</span>(user_ss),</span></span><br><span class="line"><span class="params">                 <span class="string">&quot;r&quot;</span>(user_rsp),</span></span><br><span class="line"><span class="params">                 <span class="string">&quot;r&quot;</span>(user_rflags),</span></span><br><span class="line"><span class="params">                 <span class="string">&quot;r&quot;</span>(user_cs), <span class="string">&quot;r&quot;</span>(win))</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">陌影形</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2024/08/29/%E6%9E%B6%E6%9E%84/x86-64%E5%AD%98%E5%82%A8%E6%A8%A1%E5%9E%8B/">http://example.com/2024/08/29/%E6%9E%B6%E6%9E%84/x86-64%E5%AD%98%E5%82%A8%E6%A8%A1%E5%9E%8B/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%9E%B6%E6%9E%84/">架构</a><a class="post-meta__tags" href="/tags/x86-64/">x86-64</a></div><div class="post_share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/08/30/%E6%9E%B6%E6%9E%84/x86-64%E8%BF%9B%E7%A8%8B%E6%A8%A1%E5%9E%8B/" title="x86-64-task模型"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">Previous</div><div class="prev_info">x86-64-task模型</div></div></a></div><div class="next-post pull-right"><a href="/2024/08/26/windows/pe%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/" title="PE文件结构"><img class="cover" src="/img/cov22.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next</div><div class="next_info">PE文件结构</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2024/08/30/%E6%9E%B6%E6%9E%84/x86-64%E5%86%85%E8%81%94%E6%B1%87%E7%BC%96/" title="x86-64内联汇编"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-30</div><div class="title">x86-64内联汇编</div></div></a></div><div><a href="/2024/08/30/%E6%9E%B6%E6%9E%84/x86-64%E8%BF%9B%E7%A8%8B%E6%A8%A1%E5%9E%8B/" title="x86-64-task模型"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-30</div><div class="title">x86-64-task模型</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div id="lv-container" data-id="city" data-uid="MTAyMC82MDAzNi8zNjQ5OQ=="></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">陌影形</div><div class="author-info__description">MYX</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">53</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">17</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">17</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MoyInGxing"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/MoyInGxing" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E8%A7%88"><span class="toc-number">1.</span> <span class="toc-text">总览</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#system-register%EF%BC%88%E7%A1%AC%E4%BB%B6%E5%9F%BA%E7%A1%80%EF%BC%8C%E5%AF%84%E5%AD%98%E5%99%A8%E6%98%AF%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A1%AC%E4%BB%B6%E7%9A%84%E4%B8%80%E4%B8%AA%E6%8A%BD%E8%B1%A1%EF%BC%8C%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E7%9A%84%E6%80%9D%E6%83%B3%EF%BC%89"><span class="toc-number">1.1.</span> <span class="toc-text">system register（硬件基础，寄存器是计算机硬件的一个抽象，体系结构的思想）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#System-Data-Structures%EF%BC%88%E8%BD%AF%E4%BB%B6%E5%9F%BA%E7%A1%80%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">System-Data Structures（软件基础）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B"><span class="toc-number">2.</span> <span class="toc-text">内存模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.1.</span> <span class="toc-text">实模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Virtual-8086-Mode-Segmentation"><span class="toc-number">2.2.</span> <span class="toc-text">Virtual-8086 Mode Segmentation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Protected-Mode-Segmented-Memory-Models"><span class="toc-number">2.3.</span> <span class="toc-text">Protected Mode Segmented-Memory Models</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Multi-Segmented-Model"><span class="toc-number">2.3.1.</span> <span class="toc-text">Multi-Segmented Model</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Flat-Memory-Model"><span class="toc-number">2.3.2.</span> <span class="toc-text">Flat-Memory Model</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Segment-Selectors-and-Registers"><span class="toc-number">3.</span> <span class="toc-text">Segment Selectors and Registers</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Segment-Selectors"><span class="toc-number">3.1.</span> <span class="toc-text">Segment Selectors</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Segment-Registers"><span class="toc-number">3.2.</span> <span class="toc-text">Segment Registers</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AE%B5%E6%8F%8F%E8%BF%B0%E7%AC%A6%E8%A1%A8"><span class="toc-number">4.</span> <span class="toc-text">段描述符表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#GDT"><span class="toc-number">4.1.</span> <span class="toc-text">GDT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LDT"><span class="toc-number">4.2.</span> <span class="toc-text">LDT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GDT-1"><span class="toc-number">4.3.</span> <span class="toc-text">GDT</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E5%AF%84%E5%AD%98%E5%99%A8%E8%AF%A6%E8%A7%A3"><span class="toc-number">5.</span> <span class="toc-text">系统寄存器详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RFLAGS"><span class="toc-number">5.1.</span> <span class="toc-text">RFLAGS</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%83%A8%E5%88%86%E5%86%85%E6%A0%B8%E7%BA%A7%E6%8C%87%E4%BB%A4"><span class="toc-number">6.</span> <span class="toc-text">部分内核级指令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Fast-System-Call-and-Return"><span class="toc-number">6.1.</span> <span class="toc-text">Fast System Call and Return</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#SYSCALL-and-SYSRET"><span class="toc-number">6.1.1.</span> <span class="toc-text">SYSCALL and SYSRET</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SYSENTER-and-SYSEXIT-Legacy-Mode-Only"><span class="toc-number">6.1.2.</span> <span class="toc-text">SYSENTER and SYSEXIT (Legacy Mode Only)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SWAPGS"><span class="toc-number">6.1.3.</span> <span class="toc-text">SWAPGS</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E6%8C%87%E4%BB%A4%E5%AD%97%E5%85%B8"><span class="toc-number">7.</span> <span class="toc-text">内核指令字典</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#IRETQ"><span class="toc-number">7.1.</span> <span class="toc-text">IRETQ</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/22/C++/%E7%B1%BB/" title="C++类机制">C++类机制</a><time datetime="2024-09-22T09:45:08.000Z" title="Created 2024-09-22 17:45:08">2024-09-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/20/linux%E5%86%85%E6%A0%B8/linux5.15%E5%88%86%E6%9E%90/%E5%85%B3%E4%BA%8Epage%E5%88%86%E9%85%8D/" title="linux5.15之page分配">linux5.15之page分配</a><time datetime="2024-09-20T09:45:08.000Z" title="Created 2024-09-20 17:45:08">2024-09-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/19/%E5%AF%86%E7%A0%81%E5%AD%A6/%E4%BF%A1%E6%81%AF%E8%AE%BA/" title="Untitled">Untitled</a><time datetime="2024-09-19T00:40:05.460Z" title="Created 2024-09-19 08:40:05">2024-09-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/17/%E5%AF%86%E7%A0%81%E5%AD%A6/%E5%AE%9E%E6%88%98/" title="密码学实战">密码学实战</a><time datetime="2024-09-17T09:45:08.000Z" title="Created 2024-09-17 17:45:08">2024-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/16/linux%E5%86%85%E6%A0%B8/linux5.15%E5%88%86%E6%9E%90/%E5%85%B3%E4%BA%8Epage/" title="linux5.15之page">linux5.15之page</a><time datetime="2024-09-16T09:45:08.000Z" title="Created 2024-09-16 17:45:08">2024-09-16</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/footer.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2024 By 陌影形</div><div class="footer_custom_text">END</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(()=>{
+  const loadLivere = () => {
+    if (typeof LivereTower === 'object') window.LivereTower.init()
+    else {
+      (function(d, s) {
+          var j, e = d.getElementsByTagName(s)[0];
+          if (typeof LivereTower === 'function') { return; }
+          j = d.createElement(s);
+          j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+          j.async = true;
+          e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    }
+  }
+
+  if ('Livere' === 'Livere' || !false) {
+    if (false) btf.loadComment(document.getElementById('lv-container'), loadLivere)
+    else loadLivere()
+  } else {
+    window.loadOtherComment = loadLivere
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

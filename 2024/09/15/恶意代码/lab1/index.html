@@ -1,0 +1,582 @@
+<!DOCTYPE html><html lang="Chinese" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>恶意代码分析实验 | MoYingXing</title><meta name="author" content="陌影形"><meta name="copyright" content="陌影形"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="课后作业没有什么阅读价值 一、实验目的（1）完成教材上lab1-01至Lab1-04的题目； （2）根据理论课要求提交所有样本在VIrusTotal和MicroSoft Defender AntiVirus上的的分析结果 （3）编写yara规则对样本进行检测 二、实验原理1.PE文件结构PE（Portable Executable）文件是Windows操作系统下可执行文件、DLL、驱动程序等文件的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="恶意代码分析实验">
+<meta property="og:url" content="http://example.com/2024/09/15/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/lab1/index.html">
+<meta property="og:site_name" content="MoYingXing">
+<meta property="og:description" content="课后作业没有什么阅读价值 一、实验目的（1）完成教材上lab1-01至Lab1-04的题目； （2）根据理论课要求提交所有样本在VIrusTotal和MicroSoft Defender AntiVirus上的的分析结果 （3）编写yara规则对样本进行检测 二、实验原理1.PE文件结构PE（Portable Executable）文件是Windows操作系统下可执行文件、DLL、驱动程序等文件的">
+<meta property="og:locale">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/162703063?s=400&u=7f599e5661244ad7e8490354a9580880dc56acde&v=4">
+<meta property="article:published_time" content="2024-09-15T09:45:08.000Z">
+<meta property="article:modified_time" content="2024-09-23T05:21:38.000Z">
+<meta property="article:author" content="陌影形">
+<meta property="article:tag" content="恶意代码">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/162703063?s=400&u=7f599e5661244ad7e8490354a9580880dc56acde&v=4"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2024/09/15/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/lab1/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Error',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '恶意代码分析实验',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-09-23 13:21:38'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">53</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">17</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">17</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/cov.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="MoYingXing"><img class="site-icon" src="/img/favicon.png"/><span class="site-name">MoYingXing</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">恶意代码分析实验</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2024-09-15T09:45:08.000Z" title="Created 2024-09-15 17:45:08">2024-09-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-09-23T05:21:38.000Z" title="Updated 2024-09-23 13:21:38">2024-09-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/">恶意代码</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="恶意代码分析实验"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>课后作业没有什么阅读价值</p>
+<h2 id="一、实验目的"><a href="#一、实验目的" class="headerlink" title="一、实验目的"></a><strong>一、实验目的</strong></h2><p>（1）完成教材上lab1-01至Lab1-04的题目；</p>
+<p>（2）根据理论课要求提交所有样本在VIrusTotal和MicroSoft Defender AntiVirus上的的分析结果</p>
+<p>（3）编写yara规则对样本进行检测</p>
+<h2 id="二、实验原理"><a href="#二、实验原理" class="headerlink" title="二、实验原理"></a><strong>二、实验原理</strong></h2><h3 id="1-PE文件结构"><a href="#1-PE文件结构" class="headerlink" title="1.PE文件结构"></a>1.PE文件结构</h3><p>PE（Portable Executable）文件是Windows操作系统下可执行文件、DLL、驱动程序等文件的通用格式。PE文件包括多个部分，其中最关键的部分包括：</p>
+<ul>
+<li><strong>DOS Header</strong>: PE文件最开始的一部分，包含DOS可执行程序的头部，主要用于兼容老旧的DOS系统。</li>
+<li><strong>PE Header</strong>: 包含文件的元数据信息，包括机器类型、时间戳、入口点等。</li>
+<li><strong>Section Table</strong>: 列出了PE文件的各个部分，包括代码段（.text）、数据段（.data）、资源段（.rsrc）等，每个段都有相应的权限和属性。</li>
+<li><strong>Import Table（导入表）</strong>: 列出了该文件运行时依赖的外部库和函数，如kernel32.dll中的CreateFileA函数。</li>
+<li><strong>Export Table（导出表）</strong>: 若该PE文件是DLL文件，该表记录了其对外导出的函数。</li>
+<li><strong>Relocation Table</strong>: 用于在内存地址重定位时调整代码中的地址。</li>
+</ul>
+<h3 id="2-加壳脱壳"><a href="#2-加壳脱壳" class="headerlink" title="2.加壳脱壳"></a>2.加壳脱壳</h3><p>加壳是一种常见的对可执行文件进行压缩和加密的技术，通常用于减少文件大小或增加文件的保护性，防止反向工程。常见的加壳工具包括UPX、Themida等。</p>
+<ul>
+<li><strong>加壳原理</strong>：加壳工具会对PE文件的代码段和数据段进行压缩或加密，并在文件头部插入解压或解密代码，以在文件运行时恢复原始代码。加壳后的文件结构通常会丢失原始的段结构，呈现出较高的信息熵值。</li>
+<li><strong>脱壳原理</strong>：脱壳是逆向分析中常用的技术，目的是通过静态或动态手段恢复加壳前的文件。动态脱壳通常通过调试器在程序运行时的OEP（Original Entry Point，原始入口点）处下断点，程序解密并恢复代码后手动导出PE文件。<ul>
+<li><strong>判断文件是否加壳</strong>：通常可以通过分析PE文件的Section表，查看段的数量、大小以及熵值（entropy）。加壳文件通常段数较少，且熵值接近7-8，表明内容被压缩或加密。</li>
+<li><strong>脱壳流程</strong>：<ol>
+<li>通过调试器（如OllyDbg）或自动化脱壳工具（如UPX脱壳工具）对目标程序进行动态调试，定位到OEP。</li>
+<li>导出内存中的PE结构，保存为未加壳的文件。</li>
+<li>重新调整导入表等内容，确保程序在不加壳的情况下正常运行。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-yara规则制定"><a href="#3-yara规则制定" class="headerlink" title="3.yara规则制定"></a>3.yara规则制定</h3><p>Yara是一种基于规则的恶意软件检测工具，通过编写规则来匹配文件中的特定模式，从而识别恶意文件或特定的文件特征。Yara规则通常用于恶意软件分析中批量检测具有相同特征的文件。</p>
+<ul>
+<li><strong>Yara规则结构</strong>：<ul>
+<li><strong>规则头部</strong>：包括规则的名称、作者、描述等元数据。</li>
+<li><strong>字符串部分</strong>：列出要匹配的字符串模式，支持文本、字节、正则表达式等多种形式。</li>
+<li><strong>条件部分</strong>：设定匹配的条件，可以是字符串是否存在、某些数值范围等复杂的逻辑。</li>
+</ul>
+</li>
+</ul>
+<h2 id="三、实验过程"><a href="#三、实验过程" class="headerlink" title="三、实验过程"></a><strong>三、实验过程</strong></h2><h3 id="lab-1-1"><a href="#lab-1-1" class="headerlink" title="lab 1-1"></a><strong>lab 1-1</strong></h3><blockquote>
+<p>这个实验使用Lab01-01.exe和Lab01-01.dll文件,的信息。</p>
+</blockquote>
+<ul>
+<li><h4 id="Q1-将文件上传至http-www-VirusTotal-com-进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗"><a href="#Q1-将文件上传至http-www-VirusTotal-com-进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗" class="headerlink" title="Q1.将文件上传至http://www.VirusTotal.com/进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗?"></a>Q1.将文件上传至<a target="_blank" rel="noopener" href="http://www.virustotal.com/%E8%BF%9B%E8%A1%8C%E5%88%86%E6%9E%90%E5%B9%B6%E6%9F%A5%E7%9C%8B%E6%8A%A5%E5%91%8A%E3%80%82%E6%96%87%E4%BB%B6%E5%8C%B9%E9%85%8D%E5%88%B0%E4%BA%86%E5%B7%B2%E6%9C%89%E7%9A%84%E5%8F%8D%E7%97%85%E6%AF%92%E8%BD%AF%E4%BB%B6%E7%89%B9%E5%BE%81%E5%90%97">http://www.VirusTotal.com/进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗</a>?</h4><blockquote>
+<p>成功识别出恶意文件，exe和dll最初识别结果如下：</p>
+</blockquote>
+<p><strong>exe</strong></p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909111144275.png" alt="image-20240909111144275"></p>
+<p><strong>dll</strong></p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909111208469.png"></p>
+<p>结果显示超过半数的安全供应商将其识别成恶意软件，基本已经可以判断其为恶意软件了。</p>
+<blockquote>
+<p>VT也识别出了其hash值，string等相关特征，exe和dll分别的结果如下：</p>
+</blockquote>
+<p><strong>exe</strong>：</p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909111624955.png" alt="image-20240909111624955"></p>
+<p><strong>dll</strong>：</p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909111533846.png" alt="image-20240909111533846"></p>
+<blockquote>
+<p>VT也识别出了其pe文件的相关特征，exe和dll分别的结果如下：</p>
+</blockquote>
+<p><strong>exe</strong>：</p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909111703399.png" alt="image-20240909111703399"></p>
+<p><strong>dll</strong>：</p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909111720986.png" alt="image-20240909111720986"></p>
+<p>以上信息均可对其做出是否为恶意文件的初步判断。</p>
+</li>
+<li><h4 id="Q2-这些文件是什么时候编译的"><a href="#Q2-这些文件是什么时候编译的" class="headerlink" title="Q2.这些文件是什么时候编译的?"></a>Q2.这些文件是什么时候编译的?</h4><blockquote>
+<p>可通过查看<code>pe</code>文件中的<code>struct IMAGE_NT_HEADERS NtHeader</code> 中的<code>IMAGE_FILE_HEADER FileHeader</code>得到答案。exe和dll分别如下图所示（010editor）：</p>
+</blockquote>
+<p><strong>exe</strong>：时间戳值为：0x4d0e2fd3（小端法）</p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909112450130.png" alt="image-20240909112450130"></p>
+<p>网上在线工具转换：可以看出和010相差8h，010转换的是UTC时间，因此010加上8h则可以得到东八区时间（北京时间）。</p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909122038455.png" alt="image-20240909122038455"></p>
+<p><strong>dll</strong>：时间戳值为：0x4d0e2fe6（小端法）</p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909112354943.png" alt="image-20240909112354943"></p>
+<p>转换规则同上。</p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909122251259.png" alt="image-20240909122251259"></p>
+</li>
+<li><h4 id="Q3-这两个文件中是否存在迹象说明它们是否被加壳或混淆了-如果是-这些迹象在哪里"><a href="#Q3-这两个文件中是否存在迹象说明它们是否被加壳或混淆了-如果是-这些迹象在哪里" class="headerlink" title="Q3.这两个文件中是否存在迹象说明它们是否被加壳或混淆了?如果是,这些迹象在哪里?"></a>Q3.这两个文件中是否存在迹象说明它们是否被加壳或混淆了?如果是,这些迹象在哪里?</h4><blockquote>
+<p>没有被加壳，两个文件的pe中都能正确显示section信息，若被加壳的话section是不会被正确现实的，需要通过解码程序来找到<code>OEP</code>。</p>
+</blockquote>
+<p><strong>exe</strong></p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909112658199.png" alt="image-20240909112658199"></p>
+<p><strong>dll</strong></p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909112633934.png" alt="image-20240909112633934"></p>
+<blockquote>
+<p>文件也没有被混淆，可以通过die查看文件的信息熵，可以观察到都是比较低的，如果文件经过加密、压缩或混淆，其熵值会接近 7 或 8，而该文件的各节熵值大致在 4 到 4.5 之间，dll则更低了。</p>
+</blockquote>
+<p><strong>exe</strong></p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909123305249.png" alt="image-20240909123305249"></p>
+<p><strong>dll</strong></p>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909123423745.png" alt="image-20240909123423745"></p>
+</li>
+<li><h4 id="Q4-是否有导入函数显示出了这个恶意代码是做什么的-如果是-是哪些导入函数"><a href="#Q4-是否有导入函数显示出了这个恶意代码是做什么的-如果是-是哪些导入函数" class="headerlink" title="Q4.是否有导入函数显示出了这个恶意代码是做什么的?如果是,是哪些导入函数?"></a>Q4.是否有导入函数显示出了这个恶意代码是做什么的?如果是,是哪些导入函数?</h4><blockquote>
+<p>两个程序导入函数都有正确的符号，符号没有被strip，因此可以通过导入函数来初步判断程序功能，具体的查看方式可以通过010editor查看可执行文件的导入名称表（INT）</p>
+</blockquote>
+<p><strong>exe</strong></p>
+<blockquote>
+<p>只导入了两个库。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909131336965.png" alt="image-20240909131336965"></p>
+<blockquote>
+<p>kernel32.dll导入描述目录以及导入表中的导入名称表项如下：这些函数与进程控制、线程同步和资源管理密切相关。通常用于创建进程、管理互斥锁、同步线程，以及控制程序执行时间。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909131423082.png" alt="image-20240909131423082"></p>
+<blockquote>
+<p>这个是msvc的运行时库，也就是编程开发人员常用库，提供一些最基本的函数调用接口，如内存动态分配，字符串操作等等。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909131526983.png" alt="image-20240909131526983"></p>
+<p><strong>dll</strong></p>
+<blockquote>
+<p>可以观察到其导入了三个库，接下来可以分别查看三个库的导入信息表。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909123834236.png" alt="image-20240909123834236"></p>
+<blockquote>
+<p>同exe文件分析。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909124124143.png" alt="image-20240909124124143"></p>
+<blockquote>
+<p>ws2_32.dll如下：其中有个值得注意的事情，那就是其导入名称表是空的，OriginalFirstThunk原来指向导入名称表，但是现在指向的是ordinal，可以用die查看比较直观，ws2_32.dll的导出描述符有相应的索引，因此这样可以加速文件查找，否则就需要拿字符串对比。此库中的功能和网络通信相关。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909130822720.png" alt="image-20240909130822720"></p>
+<p><img src="/../../../themes/diaspora/source/img/mypic/com/image-20240909130853687.png" alt="image-20240909130853687"></p>
+<blockquote>
+<p>同exe文件分析</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240909124229386.png" alt="image-20240909124229386"></p>
+</li>
+<li><h4 id="Q5-是否有任何其他文件或基于主机的迹象-让你可以在受感染系统上查找"><a href="#Q5-是否有任何其他文件或基于主机的迹象-让你可以在受感染系统上查找" class="headerlink" title="Q5.是否有任何其他文件或基于主机的迹象,让你可以在受感染系统上查找?"></a>Q5.是否有任何其他文件或基于主机的迹象,让你可以在受感染系统上查找?</h4><blockquote>
+<p>可观察到.exe文件在程序开始做了如下操作：</p>
+<p>文件 (磁盘)<br>   |<br>   v<br>CreateFileMappingA –&gt; 创建文件映射对象（虚拟地址空间准备）<br>   |<br>   v<br>MapViewOfFile –&gt; 将文件的一部分或全部映射到进程的虚拟内存空间<br>   |<br>   v<br>访问映射的内存区域 (通过指针操作内存) –&gt; 按需加载文件内容到内存，或者将修改同步回文件。</p>
+<p>分别打开kernel.dll和Lab01-01.dll，故猜测此程序会对kernel.dll做一些替换更改操作，使其感染Lab01-01.dll。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/exedy.png" alt="image-20240917115247791"></p>
+<blockquote>
+<p>在中间经过一系列的变换过程，已经对kernel.dll做了一些列操作之后，会执行：<code>CopyFileA(ExistingFileName, NewFileName, 0)</code>将字符串改变<code>.data:0040307C ExistingFileName db &#39;Lab01-01.dll&#39;,0 </code>,<code>NewFileName     db &#39;C:\windows\system32\kerne132.dll&#39;,0</code>仅仅是单纯的字符串copy操作，没有实际意义，反倒提醒了感染者kernel.dll已经被替换为了kerne132.dll。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/str.png" alt="image-20240917120845256"></p>
+<blockquote>
+<p>最后会执行<code>sub_4011E0(aC, 0)</code>函数，<code>aC              db &#39;C:\*&#39;,0</code>ac是c目录，追进去分析一下。可以观察到其正在遍历目录下的文件，并做了一些列的复杂操作。第一个分支是对非目录进行操作，第二个分支则是对目录进行递归调用操作。其通过<code>FindFirstFileA</code>和<code>FindNextFileA</code>实现了所有文件的遍历。</p>
+<p>对文件进行操作，会定位文件的扩展名，进行和.exe比较，来判断是否为可执行文件，若是，则会进一步操作。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/find.png" alt="image-20240917121644938"></p>
+<blockquote>
+<p>综上所述可以发现很多文件的感染迹象，主要是动态链接库<code>kernel.dll</code>和c目录下的<code>exe</code>文件,但是感染的逻辑需要进一步分析。</p>
+</blockquote>
+</li>
+<li><h4 id="Q6-是否有基于网络的迹象-可以用来发现受感染机器上的这个恶意代码"><a href="#Q6-是否有基于网络的迹象-可以用来发现受感染机器上的这个恶意代码" class="headerlink" title="Q6.是否有基于网络的迹象,可以用来发现受感染机器上的这个恶意代码?"></a>Q6.是否有基于网络的迹象,可以用来发现受感染机器上的这个恶意代码?</h4><blockquote>
+<p>在分析exe文件时并没有找到和网络库相关的导入函数的操作，因此猜测替换的dll中会存在和网络相关的操作。在上面Q4的分析中，在dll中找到了ws2_32.dll导入库，此库函数则是和网路通信相关，因此其可以作为基于网络的迹象的追寻的入口点。但是这些导入函数是按照序号进行导入的,无法知道导入的到底是哪些函数。（应该可以通过查找ws2_32.dll导出表的ordinal表项来得到导入的是什么函数），其在C:\Windows\System32目录下可以找到。通过如下工具可以快速找到ordinal对应的function。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/ord.png" alt="image-20240917132248816"></p>
+<p>结合Q4中的ordinal值，可以得到如下几个导出函数：都可用来研究程序的行为。ida也可以查看导入了那个函数，会更加方便，和下述分析相一致。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">ordinal hint RVA      name</span><br><span class="line"><span class="number">23</span>      C3 <span class="number">0000</span>A060 socket</span><br><span class="line"><span class="number">115</span>     <span class="number">59</span> <span class="number">0000</span>EE40 WSAStartup</span><br><span class="line"><span class="number">4</span>       A4 <span class="number">00013330</span> connect</span><br><span class="line"><span class="number">11</span>      B4 <span class="number">00014110</span> inet_addr</span><br><span class="line"><span class="number">19</span>      BF <span class="number">000028</span>C0 send</span><br><span class="line"><span class="number">22</span>      C2 <span class="number">00012F</span>20 shutdown</span><br><span class="line"><span class="number">16</span>      BC <span class="number">00012280</span> recv</span><br><span class="line"><span class="number">3</span>       A3 <span class="number">0000B</span>740 closesocket</span><br><span class="line"><span class="number">9</span>       B3 <span class="number">00013</span>AA0 htons</span><br><span class="line"><span class="number">116</span>     <span class="number">1F</span> <span class="number">00011390</span> WSACleanup</span><br></pre></td></tr></table></figure>
+
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/ida.png" alt="image-20240917133450465"></p>
+<blockquote>
+<p>接着查找字符串表，很容易找到ip：<code>.data:10026028 cp              db &#39;127.26.152.13&#39;,0    ; DATA XREF: DllMain(x,x,x)+93↑o</code>,亦可以作为分析的入口点。</p>
+</blockquote>
+<blockquote>
+<p>最后书上还有一个额外迹象（没有想到，主要是不了解msvc）：我们也看到了从kernel32.dll导入了两个有趣的函数:CreateProcess和Sleep。这两个函数普遍在后门程序中使用。这些函数在与exec与sleep字符串结合使用时,需要特别的关注。exec字符串可能是通过网络来给后门程序传送命令,让它通过CreateProcess函数运行一个程序的。</p>
+</blockquote>
+</li>
+<li><h4 id="Q7-你猜这些文件的目的是什么"><a href="#Q7-你猜这些文件的目的是什么" class="headerlink" title="Q7.你猜这些文件的目的是什么?"></a>Q7.你猜这些文件的目的是什么?</h4><p>dll提供网络通信可以远程操纵主机，而exe用来安装dll，并感染c目录，为dll的运行做充足准备，至于如何感染，需要分析exe的主要逻辑。</p>
+</li>
+</ul>
+<h3 id="lab-1-2"><a href="#lab-1-2" class="headerlink" title="lab 1-2"></a><strong>lab 1-2</strong></h3><blockquote>
+<p>分析Lab01-02.exe</p>
+</blockquote>
+<ul>
+<li><h4 id="Q1-将-Lab01-02-exe-文件上传至http-www-VirusTotal-com-进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗"><a href="#Q1-将-Lab01-02-exe-文件上传至http-www-VirusTotal-com-进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗" class="headerlink" title="Q1.将 Lab01-02.exe 文件上传至http://www.VirusTotal.com/进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗?"></a>Q1.将 Lab01-02.exe 文件上传至<a target="_blank" rel="noopener" href="http://www.virustotal.com/%E8%BF%9B%E8%A1%8C%E5%88%86%E6%9E%90%E5%B9%B6%E6%9F%A5%E7%9C%8B%E6%8A%A5%E5%91%8A%E3%80%82%E6%96%87%E4%BB%B6%E5%8C%B9%E9%85%8D%E5%88%B0%E4%BA%86%E5%B7%B2%E6%9C%89%E7%9A%84%E5%8F%8D%E7%97%85%E6%AF%92%E8%BD%AF%E4%BB%B6%E7%89%B9%E5%BE%81%E5%90%97">http://www.VirusTotal.com/进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗</a>?</h4><blockquote>
+<p>结果显示超过半数的安全供应商将其识别成恶意软件，基本已经可以判断其为恶意软件了。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240917140332076.png" alt="image-20240917140332076"></p>
+<blockquote>
+<p>VT也识别出了其hash值，string等相关特征</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240917140439054.png" alt="image-20240917140439054"></p>
+<blockquote>
+<p>可执行文件特征</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240917140601260.png" alt="image-20240917140601260"></p>
+<blockquote>
+<p>sandbox测试</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240917140825866.png" alt="image-20240917140825866"></p>
+</li>
+<li><h4 id="Q2-是否有这个文件被加壳或混淆的任何迹象-如果是这样-这些迹象是什么-如果该文件被加壳-请进行脱壳-如果可能的话。"><a href="#Q2-是否有这个文件被加壳或混淆的任何迹象-如果是这样-这些迹象是什么-如果该文件被加壳-请进行脱壳-如果可能的话。" class="headerlink" title="Q2.是否有这个文件被加壳或混淆的任何迹象?如果是这样,这些迹象是什么?如果该文件被加壳,请进行脱壳,如果可能的话。"></a>Q2.是否有这个文件被加壳或混淆的任何迹象?如果是这样,这些迹象是什么?如果该文件被加壳,请进行脱壳,如果可能的话。</h4><blockquote>
+<p>可以看出被加壳upx壳，放入ida和die或者010都可看出，upx是压缩壳主要用来减少文件体积，不太适合用来文件保护，因此脱壳很容易。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/2upx.png"></p>
+<blockquote>
+<p>容易脱壳</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240917135151256.png" alt="image-20240917135151256"></p>
+<blockquote>
+<p>信息熵很低，没有混淆。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240917135313441.png" alt="image-20240917135313441"></p>
+</li>
+<li><h4 id="Q3-有没有任何导入函数能够暗示出这个程序的功能-如果是-是哪些导入函数-它们会告诉你什么"><a href="#Q3-有没有任何导入函数能够暗示出这个程序的功能-如果是-是哪些导入函数-它们会告诉你什么" class="headerlink" title="Q3.有没有任何导入函数能够暗示出这个程序的功能?如果是,是哪些导入函数,它们会告诉你什么?"></a>Q3.有没有任何导入函数能够暗示出这个程序的功能?如果是,是哪些导入函数,它们会告诉你什么?</h4><blockquote>
+<p>**<code>CreateThread</code>、<code>CreateMutexA</code>、<code>OpenMutexA</code>**：这些函数表明程序使用多线程来执行不同任务，并通过互斥锁进行同步控制。</p>
+<p>**<code>CreateServiceA</code>、<code>StartServiceCtrlDispatcherA</code>、<code>OpenSCManagerA</code>**：这些函数显示程序可以创建和控制系统服务，表明它可能通过创建一个服务来确保自己在系统启动时自动运行。这是恶意软件经常使用的持久化技术，能够保证在重启后仍然驻留系统中。</p>
+<p>**<code>InternetOpenA</code>、<code>InternetOpenUrlA</code>**：这些函数表明程序可能会通过网络进行远程通信，连接到恶意服务器</p>
+<p>**<code>CreateWaitableTimerA</code>、<code>SetWaitableTimer</code>**：这类函数显示程序可能会设置定时任务，进行定期的恶意操作或延迟执行。这可以用于规避检测，或在特定时间激活恶意活动。</p>
+<p>**<code>ExitProcess</code>、<code>_exit</code>**：这些函数表明恶意程序可能会在完成任务后自行结束，或者在执行特定恶意操作后强制退出以规避安全监控。</p>
+<p>**<code>_XcptFilter</code>、<code>except_handler3</code>**：这些异常处理函数可能用于应对运行时错误，避免程序崩溃。同时，恶意软件也经常通过这些机制来检测调试环境，防止分析人员调试或逆向其代码。</p>
+<p>**<code>_getmainargs</code>**：这个函数用于获取命令行参数，意味着这个恶意软件可能支持命令行参数执行不同的任务，允许攻击者在不同场景下传递特定的参数来控制其行为。</p>
+</blockquote>
+</li>
+<li><h4 id="Q4-哪些基于主机或基于网络的迹象可以被用来确定被这个恶意代码所感染的机器"><a href="#Q4-哪些基于主机或基于网络的迹象可以被用来确定被这个恶意代码所感染的机器" class="headerlink" title="Q4.哪些基于主机或基于网络的迹象可以被用来确定被这个恶意代码所感染的机器?"></a>Q4.哪些基于主机或基于网络的迹象可以被用来确定被这个恶意代码所感染的机器?</h4><blockquote>
+<p>检查字符啊串表可以发现服务器域名，也许这个服务器是一个恶意服务器，可以检测其网络活动来进一步探究</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/2.png" alt="image-20240917140043982"></p>
+</li>
+</ul>
+<h3 id="lab-1-3"><a href="#lab-1-3" class="headerlink" title="lab 1-3"></a><strong>lab 1-3</strong></h3><blockquote>
+<p>分析Lab01-03.exe</p>
+</blockquote>
+<ul>
+<li><h4 id="Q1-将Lab01-03-exe-文件上传至http-www-VirusTotal-com-进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗"><a href="#Q1-将Lab01-03-exe-文件上传至http-www-VirusTotal-com-进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗" class="headerlink" title="Q1.将Lab01-03.exe 文件上传至http://www.VirusTotal.com/进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗?"></a>Q1.将Lab01-03.exe 文件上传至<a target="_blank" rel="noopener" href="http://www.virustotal.com/%E8%BF%9B%E8%A1%8C%E5%88%86%E6%9E%90%E5%B9%B6%E6%9F%A5%E7%9C%8B%E6%8A%A5%E5%91%8A%E3%80%82%E6%96%87%E4%BB%B6%E5%8C%B9%E9%85%8D%E5%88%B0%E4%BA%86%E5%B7%B2%E6%9C%89%E7%9A%84%E5%8F%8D%E7%97%85%E6%AF%92%E8%BD%AF%E4%BB%B6%E7%89%B9%E5%BE%81%E5%90%97">http://www.VirusTotal.com/进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗</a>?</h4><blockquote>
+<p>90%报告，可以判断为恶意软件</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240917143201548.png" alt="image-20240917143201548"></p>
+<blockquote>
+<p>VT也识别出了其hash值，string等相关特征</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240917143225873.png" alt="image-20240917143225873"></p>
+<blockquote>
+<p>可执行文件特征，可以初步判断其加了壳（很少section）</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240917143254691.png" alt="image-20240917143254691"></p>
+<blockquote>
+<p>sandbox测试，可初步判断软件行文，如网络等。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240917143344726.png" alt="image-20240917143344726"></p>
+</li>
+<li><h4 id="Q2-是否有这个文件被加壳或混淆的任何迹象-如果是这样-这些迹象是什么-如果该文件被加壳-请进行脱壳-如果可能的话。-1"><a href="#Q2-是否有这个文件被加壳或混淆的任何迹象-如果是这样-这些迹象是什么-如果该文件被加壳-请进行脱壳-如果可能的话。-1" class="headerlink" title="Q2.是否有这个文件被加壳或混淆的任何迹象?如果是这样,这些迹象是什么?如果该文件被加壳,请进行脱壳,如果可能的话。"></a>Q2.是否有这个文件被加壳或混淆的任何迹象?如果是这样,这些迹象是什么?如果该文件被加壳,请进行脱壳,如果可能的话。</h4><blockquote>
+<p>可以识别出来加壳，但没有表明壳的类型</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240917143741406.png" alt="image-20240917143741406"></p>
+<blockquote>
+<p>切换peid可以识别壳的类型</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240917144159621.png" alt="image-20240917144159621"></p>
+<blockquote>
+<p>多脱几次壳则可以脱壳成功</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240921235714078.png" alt="image-20240921235714078"></p>
+</li>
+<li><h4 id="Q3-有没有任何导入函数能够暗示出这个程序的功能-如果是-是哪些导入函数-它们会告诉你什么-1"><a href="#Q3-有没有任何导入函数能够暗示出这个程序的功能-如果是-是哪些导入函数-它们会告诉你什么-1" class="headerlink" title="Q3.有没有任何导入函数能够暗示出这个程序的功能?如果是,是哪些导入函数,它们会告诉你什么?"></a>Q3.有没有任何导入函数能够暗示出这个程序的功能?如果是,是哪些导入函数,它们会告诉你什么?</h4><blockquote>
+<p>查看ida导入表</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240921235834010.png" alt="image-20240921235834010"></p>
+<blockquote>
+<p>通过导入函数初步分析程序功能：</p>
+</blockquote>
+<p><strong>标准 C 运行时库 (MSVCRT) 函数：</strong></p>
+<ul>
+<li><strong>_main、_start</strong>：这些是标准的程序入口函数，表明该程序遵循传统的C&#x2F;C++程序的执行流程。</li>
+<li><strong>_XcptFilter、_except_handler3</strong>：异常处理相关函数，表明该程序可能处理运行时异常或错误。</li>
+<li><strong>_initterm</strong>：用于初始化全局或静态对象，这也是标准C&#x2F;C++程序的一部分。</li>
+<li><strong>_controlfp</strong>：用于控制浮点处理器的状态，这可能是为了进行精确的数值计算或避免浮点异常。</li>
+<li><strong>_setdefaultprecision</strong>：设置默认浮点精度，进一步表明该程序可能涉及复杂的数学运算。</li>
+<li><strong>_exit、exit</strong>：退出函数，用于正常终止程序。</li>
+</ul>
+<p><strong>其他库函数：</strong></p>
+<ul>
+<li><strong>VariantInit、SysAllocString、SysFreeString</strong>（OLEAUT32 库）：这些函数与 OLE 自动化有关，可能涉及到COM对象的创建和管理，表明该程序可能与 Windows 的自动化技术或脚本编写语言有交互。</li>
+<li><strong>OleInitialize、CoCreateInstance、OleUninitialize</strong>（ole32 库）：这些函数用于初始化和管理 COM 对象，表明该程序可能使用了 COM 进行进程间通信或调用外部组件。</li>
+</ul>
+</li>
+<li><h4 id="Q4-有哪些基于主机或基于网络的迹象-可以被用来确定被这个恶意代码所感染的机器"><a href="#Q4-有哪些基于主机或基于网络的迹象-可以被用来确定被这个恶意代码所感染的机器" class="headerlink" title="Q4.有哪些基于主机或基于网络的迹象,可以被用来确定被这个恶意代码所感染的机器?"></a>Q4.有哪些基于主机或基于网络的迹象,可以被用来确定被这个恶意代码所感染的机器?</h4><blockquote>
+<p>hex可以看到服务器地址，可以作为一个迹象</p>
+</blockquote>
+<p><img src="/../../../themes/diaspora/source/img/mypic/com/image-20240922000239921.png" alt="image-20240922000239921"></p>
+</li>
+</ul>
+<h3 id="lab-1-4"><a href="#lab-1-4" class="headerlink" title="lab 1-4"></a><strong>lab 1-4</strong></h3><blockquote>
+<p>分析Lab01-04.exe</p>
+</blockquote>
+<ul>
+<li><h4 id="Q1-将Lab01-04-exe-文件上传至http-www-VirusTotal-com-进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗"><a href="#Q1-将Lab01-04-exe-文件上传至http-www-VirusTotal-com-进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗" class="headerlink" title="Q1.将Lab01-04.exe 文件上传至http://www.VirusTotal.com/进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗?"></a>Q1.将Lab01-04.exe 文件上传至<a target="_blank" rel="noopener" href="http://www.virustotal.com/%E8%BF%9B%E8%A1%8C%E5%88%86%E6%9E%90%E5%B9%B6%E6%9F%A5%E7%9C%8B%E6%8A%A5%E5%91%8A%E3%80%82%E6%96%87%E4%BB%B6%E5%8C%B9%E9%85%8D%E5%88%B0%E4%BA%86%E5%B7%B2%E6%9C%89%E7%9A%84%E5%8F%8D%E7%97%85%E6%AF%92%E8%BD%AF%E4%BB%B6%E7%89%B9%E5%BE%81%E5%90%97">http://www.VirusTotal.com/进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗</a>?</h4><blockquote>
+<p>90%都判定为恶意软件，基本已经可以判定为恶意软件了</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922000412766.png" alt="image-20240922000412766"></p>
+<blockquote>
+<p>文件特征</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922000439753.png" alt="image-20240922000439753"></p>
+<blockquote>
+<p>pe特征</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922000508786.png" alt="image-20240922000508786"></p>
+<blockquote>
+<p>沙箱行为检测：</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922000559304.png" alt="image-20240922000559304"></p>
+</li>
+<li><h4 id="Q2-是否有这个文件被加壳或混淆的任何迹象-如果是这样-这些迹象是什么-如果该文件被加壳-请进行脱壳-如果可能的话。-2"><a href="#Q2-是否有这个文件被加壳或混淆的任何迹象-如果是这样-这些迹象是什么-如果该文件被加壳-请进行脱壳-如果可能的话。-2" class="headerlink" title="Q2.是否有这个文件被加壳或混淆的任何迹象?如果是这样,这些迹象是什么?如果该文件被加壳,请进行脱壳,如果可能的话。"></a>Q2.是否有这个文件被加壳或混淆的任何迹象?如果是这样,这些迹象是什么?如果该文件被加壳,请进行脱壳,如果可能的话。</h4><blockquote>
+<p>未加壳</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922000706625.png" alt="image-20240922000706625"></p>
+<blockquote>
+<p>未混淆</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922000901861.png" alt="image-20240922000901861"></p>
+</li>
+<li><h4 id="Q3-这个文件是什么时候被编译的"><a href="#Q3-这个文件是什么时候被编译的" class="headerlink" title="Q3.这个文件是什么时候被编译的?"></a>Q3.这个文件是什么时候被编译的?</h4><blockquote>
+<p>utc时间2019年8&#x2F;30 22:26:59,在vt分析的时候可以看出时间显然伪造，因此无法确定啥时候编译</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922001028830.png" alt="image-20240922001028830"></p>
+</li>
+<li><h4 id="Q4-有没有任何导入函数能够暗示出这个程序的功能-如果是-是哪些导入函数-它们会告诉你什么"><a href="#Q4-有没有任何导入函数能够暗示出这个程序的功能-如果是-是哪些导入函数-它们会告诉你什么" class="headerlink" title="Q4.有没有任何导入函数能够暗示出这个程序的功能?如果是,是哪些导入函数,它们会告诉你什么?"></a>Q4.有没有任何导入函数能够暗示出这个程序的功能?如果是,是哪些导入函数,它们会告诉你什么?</h4><blockquote>
+<h3 id="1-KERNEL32-库函数："><a href="#1-KERNEL32-库函数：" class="headerlink" title="1. KERNEL32 库函数："></a>1. <strong>KERNEL32 库函数：</strong></h3><ul>
+<li><strong>GetProcAddress、LoadLibraryA</strong>：这两个函数通常用于动态加载DLL并获取函数的地址，表明该程序可能通过动态加载来规避静态分析，或根据需求加载特定的模块执行恶意行为。</li>
+<li><strong>WinExec</strong>：用于执行外部程序，表明该恶意程序可能会启动其他进程，执行恶意命令或启动外部程序以进一步实施攻击。</li>
+<li><strong>CreateFileA、WriteFile</strong>：这两个函数用于创建或打开文件，并向文件中写入数据，表明该程序可能涉及文件操作，如记录信息或修改系统文件。</li>
+<li><strong>SizeofResource、FindResourceA、LoadResource</strong>：这些函数用于加载和管理资源，可能与提取或注入资源相关，如恶意载荷的注入。</li>
+<li><strong>CreateRemoteThread</strong>：该函数常用于进程注入，将线程注入到其他进程中执行代码，表明该程序可能具有进程注入功能。</li>
+<li><strong>OpenProcess、GetCurrentProcess、GetModuleHandleA</strong>：这些函数与进程操作相关，可能用于操纵当前进程或目标进程，表明程序可能会修改或监控进程行为。</li>
+<li><strong>MoveFileA、GetTempPathA</strong>：这些函数与文件操作有关，可能用于移动文件或在临时目录中创建文件，暗示该程序可能会自我复制或进行文件覆盖。</li>
+</ul>
+<h3 id="2-ADVAPI32-库函数："><a href="#2-ADVAPI32-库函数：" class="headerlink" title="2. ADVAPI32 库函数："></a>2. <strong>ADVAPI32 库函数：</strong></h3><ul>
+<li><strong>OpenProcessToken、LookupPrivilegeValueA、AdjustTokenPrivileges</strong>：这些函数用于调整权限令牌，表明该程序可能尝试获取更高的系统权限（如提升权限），以执行更高级别的操作，可能会规避权限限制。</li>
+</ul>
+<h3 id="3-MSVCRT-库函数："><a href="#3-MSVCRT-库函数：" class="headerlink" title="3. MSVCRT 库函数："></a>3. <strong>MSVCRT 库函数：</strong></h3><ul>
+<li><strong>_snprintf、_exit、exit</strong>：这些是标准的C库函数，与字符串操作和程序退出相关，表明该程序可能有格式化数据并在特定条件下终止自身的功能。</li>
+<li><strong>_XcptFilter、_except_handler3</strong>：与异常处理相关，表明程序可能具备处理运行时异常的机制，这可以用于防止程序崩溃或捕获异常以执行特定行为。</li>
+<li>其他常见初始化和处理函数（如**_initterm、__p__fmode**等）用于处理程序的运行环境。</li>
+</ul>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922001253455.png" alt="image-20240922001253455"></p>
+<p>表明该程序可能具备以下特性：</p>
+<ul>
+<li>动态加载模块和函数，规避静态分析。</li>
+<li>对文件和进程进行操作，可能进行进程注入或启动外部程序。</li>
+<li>提升自身权限，执行更高级别的操作。</li>
+<li>文件操作（如创建、移动文件），可能用于数据泄露、覆盖或恶意文件的部署。</li>
+</ul>
+</li>
+<li><h4 id="Q5-有哪些基于主机或基于网络的迹象-可以被用来确定被这个恶意代码所感染的机器"><a href="#Q5-有哪些基于主机或基于网络的迹象-可以被用来确定被这个恶意代码所感染的机器" class="headerlink" title="Q5.有哪些基于主机或基于网络的迹象,可以被用来确定被这个恶意代码所感染的机器?"></a>Q5.有哪些基于主机或基于网络的迹象,可以被用来确定被这个恶意代码所感染的机器?</h4><blockquote>
+<p>字符串\system32\wupdmgr.exe 表示,这个程序会在这个位置创建或者修改文件。字符串<br><a target="_blank" rel="noopener" href="http://www.malwareanalysisbook.com/updater.exe%E5%8F%AF%E8%83%BD%E8%A1%A8%E7%A4%BA%E9%A2%9D%E5%A4%96%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81%E7%9A%84%E7%BD%91%E8%B7%AF%E5%AD%98%E5%82%A8%E4%BD%8D%E7%BD%AE,%E7%94%A8%E4%BA%8E">www.malwareanalysisbook.com/updater.exe可能表示额外恶意代码的网路存储位置,用于</a><br>下载。</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922001735220.png" alt="image-20240922001735220"></p>
+</li>
+<li><h4 id="Q6-这个文件在资源段中包含一个资源。使用Resource-Hacker工具来检查资源-然后抽取资源。从资源中你能发现什么吗"><a href="#Q6-这个文件在资源段中包含一个资源。使用Resource-Hacker工具来检查资源-然后抽取资源。从资源中你能发现什么吗" class="headerlink" title="Q6.这个文件在资源段中包含一个资源。使用Resource Hacker工具来检查资源,然后抽取资源。从资源中你能发现什么吗?"></a>Q6.这个文件在资源段中包含一个资源。使用Resource Hacker工具来检查资源,然后抽取资源。从资源中你能发现什么吗?</h4><blockquote>
+<p>可以从其中看到一段网址，可能是用来下载病毒</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922002230289.png" alt="image-20240922002230289"></p>
+</li>
+</ul>
+<h3 id="MicroSoft-Defender-AntiVirus检测结果"><a href="#MicroSoft-Defender-AntiVirus检测结果" class="headerlink" title="MicroSoft Defender AntiVirus检测结果"></a>MicroSoft Defender AntiVirus检测结果</h3><blockquote>
+<p>可以看出可以有效检测出病毒特征</p>
+</blockquote>
+<ul>
+<li><p>lab1-1</p>
+<blockquote>
+<p>Trojan:Win32&#x2F;Aenjaris.CT!bit</p>
+<p>是木马家族Aenjaris</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922014035272.png" alt="image-20240922014035272"></p>
+</li>
+<li><p>lab 1-2</p>
+<blockquote>
+<p> Trojan:Win32&#x2F;Graftor.GPA!MTB</p>
+<p>木马家族GPA</p>
+</blockquote>
+</li>
+</ul>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922013625425.png" alt="image-20240922013625425"></p>
+<ul>
+<li><p>lab1-3</p>
+<blockquote>
+<p> Trojan:Win32&#x2F;Graftor.GPA!MTB</p>
+<p>木马家族GPA</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922013743775.png" alt="image-20240922013743775"></p>
+</li>
+<li><p>lab1-4</p>
+<blockquote>
+<p>TrojanDownloader:Win32&#x2F;Small!MSR</p>
+<p>木马下载器</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922013723209.png" alt="image-20240922013723209"></p>
+</li>
+</ul>
+<h3 id="编写Yara规则"><a href="#编写Yara规则" class="headerlink" title="编写Yara规则"></a>编写Yara规则</h3><blockquote>
+<p>因为加壳的原因，因此主要基于hex来进行恶意文件扫描</p>
+</blockquote>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import &quot;pe&quot;</span><br><span class="line">rule malstring </span><br><span class="line">&#123; </span><br><span class="line">    strings:</span><br><span class="line">        $malstring = &quot;C:\\windows\\system32\\kerne132.dll&quot;</span><br><span class="line">        $malstring2 = &#123;07 68 74 74 70 3A 2F 2F 77 FF B7 BF DD 00 2E 6D 1E 77 61 72 65 61 6E 07 79 73 69 73 62 6F 6F 6B&#125; //.http://w......m.warean.ysisbook</span><br><span class="line">        $l3 = &#123;00 6F 6C 65 33 32&#125;</span><br><span class="line">        $l4 = &#123;00 68 74 74 70 3A 2F 2F 77 77 77 2E 70 72 61 63 74 69 63 61 6C 6D 61 </span><br><span class="line">                6C 77 61 72 65 61 6E 61 6C 79 73 69 73 2E 63 6F 6D 2F 75 70 64 61 74 </span><br><span class="line">                65 72 2E 65 78 65 00&#125;</span><br><span class="line">    condition:</span><br><span class="line">        $malstring or $malstring2 or $l3 or $l4</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>结果</p>
+</blockquote>
+<p><img src="/../../../themes/butterfly/source/img/mypic/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/image-20240922012941523.png"></p>
+<h2 id="四、实验结论及心得体会"><a href="#四、实验结论及心得体会" class="headerlink" title="四、实验结论及心得体会"></a><strong>四、实验结论及心得体会</strong></h2><p>通过本次实验，我对恶意软件分析的基础步骤有了更加深入的理解，包括静态分析和动态分析的基本流程和技术细节。在实验中，我分别使用了VirusTotal、PE分析工具和反汇编工具（如IDA Pro）对样本进行了深入的分析，并且通过资源提取工具（如Resource Hacker）对样本内嵌的资源进行了剖析。</p>
+<h3 id="1-PE-文件结构分析"><a href="#1-PE-文件结构分析" class="headerlink" title="1. PE 文件结构分析"></a>1. <strong>PE 文件结构分析</strong></h3><p>在分析样本的过程中，通过学习PE文件结构，我能够识别出每个部分的作用。例如，导入表显示了样本依赖的库和函数，这有助于初步判断恶意代码的潜在功能。而通过对各节的熵值进行分析，可以判断文件是否被加壳或混淆。</p>
+<h3 id="2-加壳与脱壳"><a href="#2-加壳与脱壳" class="headerlink" title="2. 加壳与脱壳"></a>2. <strong>加壳与脱壳</strong></h3><p>在实验中，遇到部分样本使用了UPX壳，通过自动化工具和手动方式脱壳成功。学习了加壳与脱壳的基本概念，并了解了不同加壳工具对样本保护和体积压缩的效果。加壳是恶意软件常见的隐藏技术，脱壳后分析才能获取更详细的行为信息。</p>
+<h3 id="3-Yara-规则编写"><a href="#3-Yara-规则编写" class="headerlink" title="3. Yara 规则编写"></a>3. <strong>Yara 规则编写</strong></h3><p>通过观察不同样本的特征，我学习了如何提取关键的字符串、函数调用、文件结构信息等，并编写了简单的Yara规则来检测类似恶意样本。在实际分析中，这些规则帮助我们自动化检测和分类恶意软件。</p>
+<h3 id="4-病毒传播机制的理解"><a href="#4-病毒传播机制的理解" class="headerlink" title="4. 病毒传播机制的理解"></a>4. <strong>病毒传播机制的理解</strong></h3><p>部分样本通过修改系统的动态链接库（如kernel32.dll）或感染系统文件来实现持久化，这加深了我对恶意软件持久化技术的认识。此外，分析到的网络行为（如通过特定域名进行通信）也展现了恶意软件的远程控制和命令执行能力。</p>
+<h3 id="5-网络通信与远程操作"><a href="#5-网络通信与远程操作" class="headerlink" title="5. 网络通信与远程操作"></a>5. <strong>网络通信与远程操作</strong></h3><p>在分析中，部分样本使用了网络相关的库（如ws2_32.dll），通过对这些函数的深入理解，可以分析出恶意软件与远程服务器的通信机制。这也引导了我对恶意软件行为的进一步分析，如远程命令执行、文件下载等。</p>
+<h3 id="6-实验中的收获与不足"><a href="#6-实验中的收获与不足" class="headerlink" title="6. 实验中的收获与不足"></a>6. <strong>实验中的收获与不足</strong></h3><ul>
+<li>通过实验，我掌握了多种分析恶意软件的方法和工具，如VirusTotal、IDA、010Editor等，也增强了对PE文件结构、加壳脱壳、动态分析、Yara规则等的实际应用能力。</li>
+<li>在分析过程中，我认识到恶意软件往往使用复杂的技术手段，如混淆、加壳、API调用混淆等来对抗分析人员。这要求分析人员具备扎实的逆向工程能力，并且需要持续学习新的恶意软件技术。</li>
+<li>但在实际的恶意软件分析中，部分复杂的样本可能涉及更多高级技术，如代码混淆和反调试，需要进一步学习高级的反混淆和反调试技术。</li>
+</ul>
+<p>通过这次实验，我对恶意软件分析的核心流程有了更系统的认识，同时也对Yara规则的编写和使用有了更深入的理解。这为我后续的恶意软件研究和安全分析奠定了良好的基础。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">陌影形</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2024/09/15/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/lab1/">http://example.com/2024/09/15/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/lab1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81/">恶意代码</a></div><div class="post_share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/09/15/%E5%AF%86%E7%A0%81%E5%AD%A6/first_class/" title="密码学理论基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">Previous</div><div class="prev_info">密码学理论基础</div></div></a></div><div class="next-post pull-right"><a href="/2024/09/15/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/LLVM%20IR/" title="IR初探"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">Next</div><div class="next_info">IR初探</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div id="lv-container" data-id="city" data-uid="MTAyMC82MDAzNi8zNjQ5OQ=="></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/162703063?s=400&amp;u=7f599e5661244ad7e8490354a9580880dc56acde&amp;v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">陌影形</div><div class="author-info__description">MYX</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">53</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">17</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">17</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MoyInGxing"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/MoyInGxing" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AE%9E%E9%AA%8C%E7%9B%AE%E7%9A%84"><span class="toc-number">1.</span> <span class="toc-text">一、实验目的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%AE%9E%E9%AA%8C%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">二、实验原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-PE%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">1.PE文件结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%8A%A0%E5%A3%B3%E8%84%B1%E5%A3%B3"><span class="toc-number">2.2.</span> <span class="toc-text">2.加壳脱壳</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-yara%E8%A7%84%E5%88%99%E5%88%B6%E5%AE%9A"><span class="toc-number">2.3.</span> <span class="toc-text">3.yara规则制定</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%AE%9E%E9%AA%8C%E8%BF%87%E7%A8%8B"><span class="toc-number">3.</span> <span class="toc-text">三、实验过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#lab-1-1"><span class="toc-number">3.1.</span> <span class="toc-text">lab 1-1</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Q1-%E5%B0%86%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E8%87%B3http-www-VirusTotal-com-%E8%BF%9B%E8%A1%8C%E5%88%86%E6%9E%90%E5%B9%B6%E6%9F%A5%E7%9C%8B%E6%8A%A5%E5%91%8A%E3%80%82%E6%96%87%E4%BB%B6%E5%8C%B9%E9%85%8D%E5%88%B0%E4%BA%86%E5%B7%B2%E6%9C%89%E7%9A%84%E5%8F%8D%E7%97%85%E6%AF%92%E8%BD%AF%E4%BB%B6%E7%89%B9%E5%BE%81%E5%90%97"><span class="toc-number">3.1.1.</span> <span class="toc-text">Q1.将文件上传至http:&#x2F;&#x2F;www.VirusTotal.com&#x2F;进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q2-%E8%BF%99%E4%BA%9B%E6%96%87%E4%BB%B6%E6%98%AF%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E7%BC%96%E8%AF%91%E7%9A%84"><span class="toc-number">3.1.2.</span> <span class="toc-text">Q2.这些文件是什么时候编译的?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q3-%E8%BF%99%E4%B8%A4%E4%B8%AA%E6%96%87%E4%BB%B6%E4%B8%AD%E6%98%AF%E5%90%A6%E5%AD%98%E5%9C%A8%E8%BF%B9%E8%B1%A1%E8%AF%B4%E6%98%8E%E5%AE%83%E4%BB%AC%E6%98%AF%E5%90%A6%E8%A2%AB%E5%8A%A0%E5%A3%B3%E6%88%96%E6%B7%B7%E6%B7%86%E4%BA%86-%E5%A6%82%E6%9E%9C%E6%98%AF-%E8%BF%99%E4%BA%9B%E8%BF%B9%E8%B1%A1%E5%9C%A8%E5%93%AA%E9%87%8C"><span class="toc-number">3.1.3.</span> <span class="toc-text">Q3.这两个文件中是否存在迹象说明它们是否被加壳或混淆了?如果是,这些迹象在哪里?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q4-%E6%98%AF%E5%90%A6%E6%9C%89%E5%AF%BC%E5%85%A5%E5%87%BD%E6%95%B0%E6%98%BE%E7%A4%BA%E5%87%BA%E4%BA%86%E8%BF%99%E4%B8%AA%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81%E6%98%AF%E5%81%9A%E4%BB%80%E4%B9%88%E7%9A%84-%E5%A6%82%E6%9E%9C%E6%98%AF-%E6%98%AF%E5%93%AA%E4%BA%9B%E5%AF%BC%E5%85%A5%E5%87%BD%E6%95%B0"><span class="toc-number">3.1.4.</span> <span class="toc-text">Q4.是否有导入函数显示出了这个恶意代码是做什么的?如果是,是哪些导入函数?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q5-%E6%98%AF%E5%90%A6%E6%9C%89%E4%BB%BB%E4%BD%95%E5%85%B6%E4%BB%96%E6%96%87%E4%BB%B6%E6%88%96%E5%9F%BA%E4%BA%8E%E4%B8%BB%E6%9C%BA%E7%9A%84%E8%BF%B9%E8%B1%A1-%E8%AE%A9%E4%BD%A0%E5%8F%AF%E4%BB%A5%E5%9C%A8%E5%8F%97%E6%84%9F%E6%9F%93%E7%B3%BB%E7%BB%9F%E4%B8%8A%E6%9F%A5%E6%89%BE"><span class="toc-number">3.1.5.</span> <span class="toc-text">Q5.是否有任何其他文件或基于主机的迹象,让你可以在受感染系统上查找?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q6-%E6%98%AF%E5%90%A6%E6%9C%89%E5%9F%BA%E4%BA%8E%E7%BD%91%E7%BB%9C%E7%9A%84%E8%BF%B9%E8%B1%A1-%E5%8F%AF%E4%BB%A5%E7%94%A8%E6%9D%A5%E5%8F%91%E7%8E%B0%E5%8F%97%E6%84%9F%E6%9F%93%E6%9C%BA%E5%99%A8%E4%B8%8A%E7%9A%84%E8%BF%99%E4%B8%AA%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81"><span class="toc-number">3.1.6.</span> <span class="toc-text">Q6.是否有基于网络的迹象,可以用来发现受感染机器上的这个恶意代码?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q7-%E4%BD%A0%E7%8C%9C%E8%BF%99%E4%BA%9B%E6%96%87%E4%BB%B6%E7%9A%84%E7%9B%AE%E7%9A%84%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">3.1.7.</span> <span class="toc-text">Q7.你猜这些文件的目的是什么?</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lab-1-2"><span class="toc-number">3.2.</span> <span class="toc-text">lab 1-2</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Q1-%E5%B0%86-Lab01-02-exe-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E8%87%B3http-www-VirusTotal-com-%E8%BF%9B%E8%A1%8C%E5%88%86%E6%9E%90%E5%B9%B6%E6%9F%A5%E7%9C%8B%E6%8A%A5%E5%91%8A%E3%80%82%E6%96%87%E4%BB%B6%E5%8C%B9%E9%85%8D%E5%88%B0%E4%BA%86%E5%B7%B2%E6%9C%89%E7%9A%84%E5%8F%8D%E7%97%85%E6%AF%92%E8%BD%AF%E4%BB%B6%E7%89%B9%E5%BE%81%E5%90%97"><span class="toc-number">3.2.1.</span> <span class="toc-text">Q1.将 Lab01-02.exe 文件上传至http:&#x2F;&#x2F;www.VirusTotal.com&#x2F;进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q2-%E6%98%AF%E5%90%A6%E6%9C%89%E8%BF%99%E4%B8%AA%E6%96%87%E4%BB%B6%E8%A2%AB%E5%8A%A0%E5%A3%B3%E6%88%96%E6%B7%B7%E6%B7%86%E7%9A%84%E4%BB%BB%E4%BD%95%E8%BF%B9%E8%B1%A1-%E5%A6%82%E6%9E%9C%E6%98%AF%E8%BF%99%E6%A0%B7-%E8%BF%99%E4%BA%9B%E8%BF%B9%E8%B1%A1%E6%98%AF%E4%BB%80%E4%B9%88-%E5%A6%82%E6%9E%9C%E8%AF%A5%E6%96%87%E4%BB%B6%E8%A2%AB%E5%8A%A0%E5%A3%B3-%E8%AF%B7%E8%BF%9B%E8%A1%8C%E8%84%B1%E5%A3%B3-%E5%A6%82%E6%9E%9C%E5%8F%AF%E8%83%BD%E7%9A%84%E8%AF%9D%E3%80%82"><span class="toc-number">3.2.2.</span> <span class="toc-text">Q2.是否有这个文件被加壳或混淆的任何迹象?如果是这样,这些迹象是什么?如果该文件被加壳,请进行脱壳,如果可能的话。</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q3-%E6%9C%89%E6%B2%A1%E6%9C%89%E4%BB%BB%E4%BD%95%E5%AF%BC%E5%85%A5%E5%87%BD%E6%95%B0%E8%83%BD%E5%A4%9F%E6%9A%97%E7%A4%BA%E5%87%BA%E8%BF%99%E4%B8%AA%E7%A8%8B%E5%BA%8F%E7%9A%84%E5%8A%9F%E8%83%BD-%E5%A6%82%E6%9E%9C%E6%98%AF-%E6%98%AF%E5%93%AA%E4%BA%9B%E5%AF%BC%E5%85%A5%E5%87%BD%E6%95%B0-%E5%AE%83%E4%BB%AC%E4%BC%9A%E5%91%8A%E8%AF%89%E4%BD%A0%E4%BB%80%E4%B9%88"><span class="toc-number">3.2.3.</span> <span class="toc-text">Q3.有没有任何导入函数能够暗示出这个程序的功能?如果是,是哪些导入函数,它们会告诉你什么?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q4-%E5%93%AA%E4%BA%9B%E5%9F%BA%E4%BA%8E%E4%B8%BB%E6%9C%BA%E6%88%96%E5%9F%BA%E4%BA%8E%E7%BD%91%E7%BB%9C%E7%9A%84%E8%BF%B9%E8%B1%A1%E5%8F%AF%E4%BB%A5%E8%A2%AB%E7%94%A8%E6%9D%A5%E7%A1%AE%E5%AE%9A%E8%A2%AB%E8%BF%99%E4%B8%AA%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81%E6%89%80%E6%84%9F%E6%9F%93%E7%9A%84%E6%9C%BA%E5%99%A8"><span class="toc-number">3.2.4.</span> <span class="toc-text">Q4.哪些基于主机或基于网络的迹象可以被用来确定被这个恶意代码所感染的机器?</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lab-1-3"><span class="toc-number">3.3.</span> <span class="toc-text">lab 1-3</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Q1-%E5%B0%86Lab01-03-exe-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E8%87%B3http-www-VirusTotal-com-%E8%BF%9B%E8%A1%8C%E5%88%86%E6%9E%90%E5%B9%B6%E6%9F%A5%E7%9C%8B%E6%8A%A5%E5%91%8A%E3%80%82%E6%96%87%E4%BB%B6%E5%8C%B9%E9%85%8D%E5%88%B0%E4%BA%86%E5%B7%B2%E6%9C%89%E7%9A%84%E5%8F%8D%E7%97%85%E6%AF%92%E8%BD%AF%E4%BB%B6%E7%89%B9%E5%BE%81%E5%90%97"><span class="toc-number">3.3.1.</span> <span class="toc-text">Q1.将Lab01-03.exe 文件上传至http:&#x2F;&#x2F;www.VirusTotal.com&#x2F;进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q2-%E6%98%AF%E5%90%A6%E6%9C%89%E8%BF%99%E4%B8%AA%E6%96%87%E4%BB%B6%E8%A2%AB%E5%8A%A0%E5%A3%B3%E6%88%96%E6%B7%B7%E6%B7%86%E7%9A%84%E4%BB%BB%E4%BD%95%E8%BF%B9%E8%B1%A1-%E5%A6%82%E6%9E%9C%E6%98%AF%E8%BF%99%E6%A0%B7-%E8%BF%99%E4%BA%9B%E8%BF%B9%E8%B1%A1%E6%98%AF%E4%BB%80%E4%B9%88-%E5%A6%82%E6%9E%9C%E8%AF%A5%E6%96%87%E4%BB%B6%E8%A2%AB%E5%8A%A0%E5%A3%B3-%E8%AF%B7%E8%BF%9B%E8%A1%8C%E8%84%B1%E5%A3%B3-%E5%A6%82%E6%9E%9C%E5%8F%AF%E8%83%BD%E7%9A%84%E8%AF%9D%E3%80%82-1"><span class="toc-number">3.3.2.</span> <span class="toc-text">Q2.是否有这个文件被加壳或混淆的任何迹象?如果是这样,这些迹象是什么?如果该文件被加壳,请进行脱壳,如果可能的话。</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q3-%E6%9C%89%E6%B2%A1%E6%9C%89%E4%BB%BB%E4%BD%95%E5%AF%BC%E5%85%A5%E5%87%BD%E6%95%B0%E8%83%BD%E5%A4%9F%E6%9A%97%E7%A4%BA%E5%87%BA%E8%BF%99%E4%B8%AA%E7%A8%8B%E5%BA%8F%E7%9A%84%E5%8A%9F%E8%83%BD-%E5%A6%82%E6%9E%9C%E6%98%AF-%E6%98%AF%E5%93%AA%E4%BA%9B%E5%AF%BC%E5%85%A5%E5%87%BD%E6%95%B0-%E5%AE%83%E4%BB%AC%E4%BC%9A%E5%91%8A%E8%AF%89%E4%BD%A0%E4%BB%80%E4%B9%88-1"><span class="toc-number">3.3.3.</span> <span class="toc-text">Q3.有没有任何导入函数能够暗示出这个程序的功能?如果是,是哪些导入函数,它们会告诉你什么?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q4-%E6%9C%89%E5%93%AA%E4%BA%9B%E5%9F%BA%E4%BA%8E%E4%B8%BB%E6%9C%BA%E6%88%96%E5%9F%BA%E4%BA%8E%E7%BD%91%E7%BB%9C%E7%9A%84%E8%BF%B9%E8%B1%A1-%E5%8F%AF%E4%BB%A5%E8%A2%AB%E7%94%A8%E6%9D%A5%E7%A1%AE%E5%AE%9A%E8%A2%AB%E8%BF%99%E4%B8%AA%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81%E6%89%80%E6%84%9F%E6%9F%93%E7%9A%84%E6%9C%BA%E5%99%A8"><span class="toc-number">3.3.4.</span> <span class="toc-text">Q4.有哪些基于主机或基于网络的迹象,可以被用来确定被这个恶意代码所感染的机器?</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lab-1-4"><span class="toc-number">3.4.</span> <span class="toc-text">lab 1-4</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Q1-%E5%B0%86Lab01-04-exe-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E8%87%B3http-www-VirusTotal-com-%E8%BF%9B%E8%A1%8C%E5%88%86%E6%9E%90%E5%B9%B6%E6%9F%A5%E7%9C%8B%E6%8A%A5%E5%91%8A%E3%80%82%E6%96%87%E4%BB%B6%E5%8C%B9%E9%85%8D%E5%88%B0%E4%BA%86%E5%B7%B2%E6%9C%89%E7%9A%84%E5%8F%8D%E7%97%85%E6%AF%92%E8%BD%AF%E4%BB%B6%E7%89%B9%E5%BE%81%E5%90%97"><span class="toc-number">3.4.1.</span> <span class="toc-text">Q1.将Lab01-04.exe 文件上传至http:&#x2F;&#x2F;www.VirusTotal.com&#x2F;进行分析并查看报告。文件匹配到了已有的反病毒软件特征吗?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q2-%E6%98%AF%E5%90%A6%E6%9C%89%E8%BF%99%E4%B8%AA%E6%96%87%E4%BB%B6%E8%A2%AB%E5%8A%A0%E5%A3%B3%E6%88%96%E6%B7%B7%E6%B7%86%E7%9A%84%E4%BB%BB%E4%BD%95%E8%BF%B9%E8%B1%A1-%E5%A6%82%E6%9E%9C%E6%98%AF%E8%BF%99%E6%A0%B7-%E8%BF%99%E4%BA%9B%E8%BF%B9%E8%B1%A1%E6%98%AF%E4%BB%80%E4%B9%88-%E5%A6%82%E6%9E%9C%E8%AF%A5%E6%96%87%E4%BB%B6%E8%A2%AB%E5%8A%A0%E5%A3%B3-%E8%AF%B7%E8%BF%9B%E8%A1%8C%E8%84%B1%E5%A3%B3-%E5%A6%82%E6%9E%9C%E5%8F%AF%E8%83%BD%E7%9A%84%E8%AF%9D%E3%80%82-2"><span class="toc-number">3.4.2.</span> <span class="toc-text">Q2.是否有这个文件被加壳或混淆的任何迹象?如果是这样,这些迹象是什么?如果该文件被加壳,请进行脱壳,如果可能的话。</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q3-%E8%BF%99%E4%B8%AA%E6%96%87%E4%BB%B6%E6%98%AF%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%A2%AB%E7%BC%96%E8%AF%91%E7%9A%84"><span class="toc-number">3.4.3.</span> <span class="toc-text">Q3.这个文件是什么时候被编译的?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q4-%E6%9C%89%E6%B2%A1%E6%9C%89%E4%BB%BB%E4%BD%95%E5%AF%BC%E5%85%A5%E5%87%BD%E6%95%B0%E8%83%BD%E5%A4%9F%E6%9A%97%E7%A4%BA%E5%87%BA%E8%BF%99%E4%B8%AA%E7%A8%8B%E5%BA%8F%E7%9A%84%E5%8A%9F%E8%83%BD-%E5%A6%82%E6%9E%9C%E6%98%AF-%E6%98%AF%E5%93%AA%E4%BA%9B%E5%AF%BC%E5%85%A5%E5%87%BD%E6%95%B0-%E5%AE%83%E4%BB%AC%E4%BC%9A%E5%91%8A%E8%AF%89%E4%BD%A0%E4%BB%80%E4%B9%88"><span class="toc-number">3.4.4.</span> <span class="toc-text">Q4.有没有任何导入函数能够暗示出这个程序的功能?如果是,是哪些导入函数,它们会告诉你什么?</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-KERNEL32-%E5%BA%93%E5%87%BD%E6%95%B0%EF%BC%9A"><span class="toc-number">3.5.</span> <span class="toc-text">1. KERNEL32 库函数：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-ADVAPI32-%E5%BA%93%E5%87%BD%E6%95%B0%EF%BC%9A"><span class="toc-number">3.6.</span> <span class="toc-text">2. ADVAPI32 库函数：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-MSVCRT-%E5%BA%93%E5%87%BD%E6%95%B0%EF%BC%9A"><span class="toc-number">3.7.</span> <span class="toc-text">3. MSVCRT 库函数：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Q5-%E6%9C%89%E5%93%AA%E4%BA%9B%E5%9F%BA%E4%BA%8E%E4%B8%BB%E6%9C%BA%E6%88%96%E5%9F%BA%E4%BA%8E%E7%BD%91%E7%BB%9C%E7%9A%84%E8%BF%B9%E8%B1%A1-%E5%8F%AF%E4%BB%A5%E8%A2%AB%E7%94%A8%E6%9D%A5%E7%A1%AE%E5%AE%9A%E8%A2%AB%E8%BF%99%E4%B8%AA%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81%E6%89%80%E6%84%9F%E6%9F%93%E7%9A%84%E6%9C%BA%E5%99%A8"><span class="toc-number">3.7.1.</span> <span class="toc-text">Q5.有哪些基于主机或基于网络的迹象,可以被用来确定被这个恶意代码所感染的机器?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q6-%E8%BF%99%E4%B8%AA%E6%96%87%E4%BB%B6%E5%9C%A8%E8%B5%84%E6%BA%90%E6%AE%B5%E4%B8%AD%E5%8C%85%E5%90%AB%E4%B8%80%E4%B8%AA%E8%B5%84%E6%BA%90%E3%80%82%E4%BD%BF%E7%94%A8Resource-Hacker%E5%B7%A5%E5%85%B7%E6%9D%A5%E6%A3%80%E6%9F%A5%E8%B5%84%E6%BA%90-%E7%84%B6%E5%90%8E%E6%8A%BD%E5%8F%96%E8%B5%84%E6%BA%90%E3%80%82%E4%BB%8E%E8%B5%84%E6%BA%90%E4%B8%AD%E4%BD%A0%E8%83%BD%E5%8F%91%E7%8E%B0%E4%BB%80%E4%B9%88%E5%90%97"><span class="toc-number">3.7.2.</span> <span class="toc-text">Q6.这个文件在资源段中包含一个资源。使用Resource Hacker工具来检查资源,然后抽取资源。从资源中你能发现什么吗?</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MicroSoft-Defender-AntiVirus%E6%A3%80%E6%B5%8B%E7%BB%93%E6%9E%9C"><span class="toc-number">3.8.</span> <span class="toc-text">MicroSoft Defender AntiVirus检测结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E5%86%99Yara%E8%A7%84%E5%88%99"><span class="toc-number">3.9.</span> <span class="toc-text">编写Yara规则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AE%9E%E9%AA%8C%E7%BB%93%E8%AE%BA%E5%8F%8A%E5%BF%83%E5%BE%97%E4%BD%93%E4%BC%9A"><span class="toc-number">4.</span> <span class="toc-text">四、实验结论及心得体会</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-PE-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90"><span class="toc-number">4.1.</span> <span class="toc-text">1. PE 文件结构分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%8A%A0%E5%A3%B3%E4%B8%8E%E8%84%B1%E5%A3%B3"><span class="toc-number">4.2.</span> <span class="toc-text">2. 加壳与脱壳</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Yara-%E8%A7%84%E5%88%99%E7%BC%96%E5%86%99"><span class="toc-number">4.3.</span> <span class="toc-text">3. Yara 规则编写</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E7%97%85%E6%AF%92%E4%BC%A0%E6%92%AD%E6%9C%BA%E5%88%B6%E7%9A%84%E7%90%86%E8%A7%A3"><span class="toc-number">4.4.</span> <span class="toc-text">4. 病毒传播机制的理解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%8E%E8%BF%9C%E7%A8%8B%E6%93%8D%E4%BD%9C"><span class="toc-number">4.5.</span> <span class="toc-text">5. 网络通信与远程操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E5%AE%9E%E9%AA%8C%E4%B8%AD%E7%9A%84%E6%94%B6%E8%8E%B7%E4%B8%8E%E4%B8%8D%E8%B6%B3"><span class="toc-number">4.6.</span> <span class="toc-text">6. 实验中的收获与不足</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/22/C++/%E7%B1%BB/" title="C++类机制">C++类机制</a><time datetime="2024-09-22T09:45:08.000Z" title="Created 2024-09-22 17:45:08">2024-09-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/20/linux%E5%86%85%E6%A0%B8/linux5.15%E5%88%86%E6%9E%90/%E5%85%B3%E4%BA%8Epage%E5%88%86%E9%85%8D/" title="linux5.15之page分配">linux5.15之page分配</a><time datetime="2024-09-20T09:45:08.000Z" title="Created 2024-09-20 17:45:08">2024-09-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/19/%E5%AF%86%E7%A0%81%E5%AD%A6/%E4%BF%A1%E6%81%AF%E8%AE%BA/" title="Untitled">Untitled</a><time datetime="2024-09-19T00:40:05.460Z" title="Created 2024-09-19 08:40:05">2024-09-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/17/%E5%AF%86%E7%A0%81%E5%AD%A6/%E5%AE%9E%E6%88%98/" title="密码学实战">密码学实战</a><time datetime="2024-09-17T09:45:08.000Z" title="Created 2024-09-17 17:45:08">2024-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/16/linux%E5%86%85%E6%A0%B8/linux5.15%E5%88%86%E6%9E%90/%E5%85%B3%E4%BA%8Epage/" title="linux5.15之page">linux5.15之page</a><time datetime="2024-09-16T09:45:08.000Z" title="Created 2024-09-16 17:45:08">2024-09-16</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/footer.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2024 By 陌影形</div><div class="footer_custom_text">END</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(()=>{
+  const loadLivere = () => {
+    if (typeof LivereTower === 'object') window.LivereTower.init()
+    else {
+      (function(d, s) {
+          var j, e = d.getElementsByTagName(s)[0];
+          if (typeof LivereTower === 'function') { return; }
+          j = d.createElement(s);
+          j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+          j.async = true;
+          e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    }
+  }
+
+  if ('Livere' === 'Livere' || !false) {
+    if (false) btf.loadComment(document.getElementById('lv-container'), loadLivere)
+    else loadLivere()
+  } else {
+    window.loadOtherComment = loadLivere
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
